@@ -1,4 +1,4 @@
-@extends('layout.clean', [
+@extends('layouts.clean', [
     'cssBody' => 'signin-body'
 ])
 @section('title', 'Signin')
@@ -14,8 +14,11 @@
         <div id="responseMessage" class="alert text-center text-dark" role="alert" style="display: none;"></div>
             <h2>Sign In Now</h2>
             <p>Enter your credentials to access your account</p>
-            <form id="signinForm" class="form">
-                
+            <div class="msg alert" style="display: none">
+
+            </div>
+            <form id="signinForm" action={{route('signin.post')}} class="form">
+                @csrf
                 <div class="mb-3">
                     <label class="text-start form-label" for="email">Email address</label>
                     <input class="form-control" name="email" id="email" type="email" placeholder="example@gmail.com"/>
@@ -23,7 +26,6 @@
                 <div class="mb-3 d-flex justify-content-between align-items-center">
                     <label class="form-label" style="margin-bottom:-20px" for="password">Password</label>
                     <a class="text-decoration-none" href="#" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">Forgot password?</a>
-
                 </div>
                 <div class="mb-3">
                     <input class="form-control" name="password" id="password" placeholder="Your Password" type="password"/>
@@ -38,10 +40,9 @@
                     <button class="btn btn-primary" type="submit">Sign In</button>
                 </div>
             </form>
-            <p class="text-center text-signin mt-3">
-                Don't have an account yet? <a href="#">Sign up</a>
+            <p class="text-center text-auth-footer mt-3">
+                Don't have an account yet? <a href="{{ route('signup') }}">Sign up</a>
             </p>
-
         </div>
         <!-- Reset Password Modal -->
         <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">

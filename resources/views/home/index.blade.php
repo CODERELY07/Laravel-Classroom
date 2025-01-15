@@ -1,4 +1,4 @@
-@extends('layout.clean', [
+@extends('layouts.clean', [
     'cssBody' => 'home-body'
 ])
 @section('title', 'Home')
@@ -17,7 +17,7 @@
             Join ME Classroom to build meaningful and tailored learning experiences. Equip your students for success with tools crafted to enhance teaching efficiency and create engaging learning environments.
         </p>
         <div class="btn-container">
-        <a href="#">
+        <a href="{{ route('signup') }}">
         <button class="btn btn-primary">
             Sign Up
         </button>

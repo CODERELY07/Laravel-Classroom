@@ -62,7 +62,7 @@ p {
     color: #6c757d;
     text-align: center;
 }
-.btn-google, .btn-apple {
+/* .btn-google, .btn-apple {
     background-color: #fff;
     border: 1px solid #ddd;
     color: #000;
@@ -70,15 +70,15 @@ p {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-.btn-google img, .btn-apple img {
+} */
+/* .btn-google img, .btn-apple img {
     margin-right: 8px;
-}
-.btn-login, .btn-signup {
+} */
+/* .btn-login, .btn-signup {
     background-color: #3b82f6;
     color: #fff;
     font-size: 16px;
-}
+} */
 .form-check-label a {
     color: #3b82f6;
     text-decoration: none;
@@ -87,7 +87,7 @@ p {
 .form-check-label a:hover {
     text-decoration: underline;
 }
-.text-signin a {
+.text-auth-footer a {
     color: #3b82f6;
     text-decoration: none;
     font-size: 14px;
