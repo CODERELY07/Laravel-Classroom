@@ -17,7 +17,7 @@
             <div class="msg alert" style="display: none">
 
             </div>
-            <form id="signinForm" action={{route('signin.post')}} class="form">
+            <form id="signinForm" action={{route('login.post')}} class="form">
                 @csrf
                 <div class="mb-3">
                     <label class="text-start form-label" for="email">Email address</label>
@@ -25,7 +25,7 @@
                 </div>
                 <div class="mb-3 d-flex justify-content-between align-items-center">
                     <label class="form-label" style="margin-bottom:-20px" for="password">Password</label>
-                    <a class="text-decoration-none" href="#" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">Forgot password?</a>
+                    <a class="text-decoration-none" href="{{ route('forget.password.get')}}" >Forgot password?</a>
                 </div>
                 <div class="mb-3">
                     <input class="form-control" name="password" id="password" placeholder="Your Password" type="password"/>
@@ -53,19 +53,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="emailStage">
-                <p>Enter Your account email address to send the verification code.</p>
-                <form id="emailForm">
-                    <div class="mb-3">
-                    <label for="resetEmail" class="form-label">Enter your email address</label>
-                    <input type="email" class="form-control" id="resetEmail" name="resetEmail" placeholder="example@gmail.com" required>
-                    </div>
-                    <div class="mb-3">
-                    <button type="submit" id="reset-btn" class="btn btn-primary w-100">Submit</button>
-                    </div>
-                </form>
-                </div>
-
                 <!-- Stage 2: Verification Code -->
                 <div id="codeStage" style="display: none;">
                 <form id="codeForm">

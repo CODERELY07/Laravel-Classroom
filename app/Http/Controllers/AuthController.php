@@ -4,28 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Hash;
+use Session;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function signin(){
-        return view('auth.signin');
+    public function login(){
+        return view('auth.login');
     }
     public function signup(){
         return view('auth.signup');
     }
-    public function signinPost(Request $request):JsonResponse{
+    public function loginPost(Request $request):JsonResponse{
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:6',
         ]);
+        $remeber_me = $request->has('remember_me');
+
         $credentials = $request->only('email','password');
-        if(Auth::attempt($credentials)){
+        if(Auth::attempt($credentials, $remeber_me)){
             $redirectUrl = session()->pull('url.intended', route('user.index'));
-            return response()->json(['success' => 'Signin Successfully', 'redirectUrl' => $redirectUrl]);
+            return response()->json(['success' => 'login Successfully', 'redirectUrl' => $redirectUrl]);
         }
         return response()->json(['error' => 'Invalid Credentials']);
     }
@@ -45,6 +49,13 @@ class AuthController extends Controller
             'password' => Hash::make($request->password)
         ]);
        
-        return response()->json(['success' => 'User created successfully', 'redirectUrl' => route('signin')]);
+        return response()->json(['success' => 'User created successfully', 'redirectUrl' => route('login')]);
+    }
+
+    public function logout():RedirectResponse{
+        Session::flush();
+        Auth::logout();
+
+        return redirect(route('login'));
     }
 }

@@ -51,7 +51,7 @@
                 </div>
             </form>
             <p class="text-center text-auth-footer mt-3">
-                Already have an account? <a href="{{ route('signin')}}">Sign In</a>
+                Already have an account? <a href="{{ route('login')}}">Sign In</a>
             </p>
         </div>
     </div>

@@ -22,7 +22,7 @@
             Sign Up
         </button>
         </a>
-        <a  href="{{ route('signin') }}">
+        <a  href="{{ route('login') }}">
         <button class="btn btn-outline-primary">
             Sign in
         </button>

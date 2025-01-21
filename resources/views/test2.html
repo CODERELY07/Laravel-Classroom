@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Left-to-Right Transition</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        #content {
+            position: absolute;
+            top: 50px;
+            left: -300px; /* Start off-screen */
+            width: 300px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            opacity: 0; 
+            transform: translateX(-100%); /* Off-screen transform */
+            transition: transform 0.5s ease, opacity 0.5s ease; /* Smooth transition */
+        }
+
+        #content.active {
+            left: 50px; /* Final position */
+            opacity: 1; /* Fully visible */
+            transform: translateX(0); /* Slide into view */
+        }
+    </style>
+</head>
+<body>
+    <button id="toggleBtn">Toggle Content</button>
+    <div id="content">This is the content!</div>
+
+    <script>
+        $(document).ready(function () {
+            const content = $("#content");
+            const toggleBtn = $("#toggleBtn");
+
+            // Toggle content visibility
+            toggleBtn.on("click", function (e) {
+                e.stopPropagation(); // Prevent the event from propagating to the document
+                content.toggleClass("active"); // Add/remove active class for animation
+            });
+
+            // Hide content when clicking anywhere else
+            $(document).on("click", function () {
+                content.removeClass("active"); // Remove active class to hide
+            });
+
+            // Prevent hiding the content when clicking inside it
+            content.on("click", function (e) {
+                e.stopPropagation();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,3 +1,6 @@
-<div>
-    <!-- The whole future lies in uncertainty: live immediately. - Seneca -->
-</div>
+@extends('layouts.clean')
+
+@section('childContent')
+    @include('layouts.partials.header')
+    @yield('content')
+@endsection
