@@ -22,11 +22,11 @@
                 </ul>
             </div>
             @endif
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
             <div class="card-body pt-0"> 
-                <form action="{{ route('forget.password.post') }}" method="post">
+                <div class="msg alert" style="display: none">
+                    {{-- Message --}}
+                </div>
+                <form id="forgetPassword" action="{{ route('forget.password.post') }}" method="post">
                     @csrf
                     <div class="mb-3">
                     <label for="email" class="form-label">Enter your email address</label>

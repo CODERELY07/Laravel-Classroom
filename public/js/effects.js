@@ -18,6 +18,8 @@ $(document).ready(function(){
     }
     toggle('add-class-btn');
     toggle('profile-class-btn');
+    toggle('show-subject');
+    toggle('bell-btn');
 
     /* toggle hide and show dropdown */
 
@@ -40,13 +42,7 @@ $(document).ready(function(){
     })
     /* show and hide nav links */
 
-    // open modal
-    // $('#create').on('click', function(){
-    //     $('#createClassModal').modal('show');
-    // })
-    // $('#join').on('click', function(){
-    //     $('#joinClassModal').modal('show');
-    // })
+    // open modal and close modal
     $('.show-modal').on('click', function(){
         const targetModal = $(this).data('target');
         $(targetModal).modal('show');
@@ -56,4 +52,63 @@ $(document).ready(function(){
         $(targetModal).modal('hide');
     });
 
+    /* Class Elipsis */
+    const classEllipsis = document.querySelectorAll('.class-card .class-ellipsis');
+    const toggleContents = document.querySelectorAll('.class-card .toggle-content');
+
+    function removeActiveClasses() {
+        toggleContents.forEach((content) => {
+            content.classList.remove('active');
+        });
+    }
+
+    classEllipsis.forEach((btn) => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation(); 
+
+            toggleContents.forEach((content) => {
+                if (content !== btn.parentElement.querySelector('.toggle-content')) {
+                    content.classList.remove('active');
+                }
+            });
+
+            const toggleContent = btn.parentElement.querySelector('.toggle-content');
+            if (toggleContent) {
+                toggleContent.classList.toggle('active');
+            }
+        });
+    });
+
+    document.addEventListener('click', function () {
+        removeActiveClasses();
+    });
+
+    toggleContents.forEach((content) => {
+        content.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    });
+     /* Class Elipsis */
+
+     const savedTab = localStorage.getItem('activeTab');
+     if (savedTab) {
+         // Activate the saved tab
+         $('.tab-button').removeClass('active');
+         $('.tab-content').removeClass('active').css('opacity', 0); 
+         $(`.tab-button[data-tab="${savedTab}"]`).addClass('active');
+         $(`#${savedTab}`).addClass('active').css('opacity', 1); 
+     }
+ 
+     $('.tab-button').click(function () {
+         const tabId = $(this).data('tab');
+ 
+         // Only handle tab switches without showing the loading indicator
+         $('.tab-button').removeClass('active');
+         $('.tab-content').removeClass('active').css('opacity', 0); 
+         $(this).addClass('active');
+         $(`#${tabId}`).addClass('active').css('opacity', 1); 
+ 
+         // Save the current active tab to localStorage
+         localStorage.setItem('activeTab', tabId);
+     });
 });

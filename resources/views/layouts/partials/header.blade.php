@@ -8,10 +8,12 @@
             {{-- Navigation --}}
             <nav class="nav pt-2 shadow-1 d-flex flex-column flex-nowrap">
                 <ul class="list-unstyled">
-                    <li class="d-flex align-items-center">
-                        <i class="fa-solid fa-house"></i>
-                        <span>Home</span>
-                    </li>
+                    <a href="{{route('user.index')}}">
+                        <li class="d-flex align-items-center">
+                            <i class="fa-solid fa-house"></i>
+                            <span>Home</span>
+                        </li>
+                    </a>
                 </ul>
                 <ul class="list-unstyled pt-0 dropdown-class-parent">
                     <span class="px-3 pb-1 d-block cursor-pointer" id="dropdown-class">
@@ -86,23 +88,62 @@
         </div>
         <div class="d-flex align-items-center gap-3">
             {{-- join and create class --}}
+            @if(View::getSections()['title'] === 'Classroom')
             <div class="relative">
-                <div class="cursor-pointer add-btn" id="add-class-btn">
-                    <i class="fa-solid fa-plus"></i>
+                <div class="d-flex gap-2">
+                    <div class="relative">
+                        <div class="cursor-pointer add-btn" id="add-class-btn">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div class="toggle-content shadow-1">
+                            <ul class="list-unstyled">
+                                <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#createClassModal">Create class</li>
+                                <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#joinClassModal">Join class</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="cursor-pointer add-btn relative" id="bell-btn">
+                            <i class="fa-solid fa-bell" style="font-size: 24px; color: #333;"></i>
+                            <span class="text-white" style="position: absolute; top: 8px; right: 5px; background-color: #ff0000;font-size:10px;border-radius: 50%; width:15px;height:15px; font-weight: bold; display: flex; justify-content: center; align-items: center;">2</span>
+                        </div>
+                        <div class="toggle-content shadow-1">
+                            <ul class="list-unstyled">
+                                <a href="#" class="hover-bg">
+                                    <li type="button" class="cursor-pointer">
+                                        <div class="d-flex justify-content-between">
+                                            <p class="text-start">Activity 1</p>
+                                            <p class="text-start text-small">Dec 12, 2024</p>
+                                        </div>
+                                        <p class="text-start">You have new activity from Ms.Riben in Class BSIT</p>
+                                    </li>
+                                    <div class="line"></div>
+                                </a>
+                                <a href="#" class="hover-bg">
+                                    <li type="button" class="cursor-pointer">
+                                        <div class="d-flex justify-content-between">
+                                            <p class="text-start">Activity 1</p>
+                                            <p class="text-start text-small">Dec 12, 2024</p>
+                                        </div>
+                                        <p class="text-start">You have new activity from Ms.Riben in Class BSIT</p>
+                                    </li>
+                                    <div class="line"></div>
+                                </a>
+                            </ul>
+                        </div>
+                    </div>
+                   
+            
                 </div>
-                <div class="toggle-content shadow-1">
-                    <ul class="list-unstyled">
-                        <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#createClassModal">Create class</li>
-                        <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#joinClassModal">Join class</li>
-                    </ul>
-                </div>
+                
             </div>
+            @endif
             {{-- Profile --}}
             <div class="relative profile-parent">
                 <x-profileInitial id="profile-class-btn" class="profile-text cursor-pointer"/>
                 <div class="toggle-content profile-content align-items-center shadow-1 py-3 px-5">
                     <div class="d-flex align-items-center flex-column">
-                        <p class="text-center text-dark">calipjo.markely@gmail.com</p>
+                        <p class="text-center text-dark mb-4">calipjo.markely@gmail.com</p>
                         <x-profileInitial id="profile-class-btn" class="profile-text shadow-3 text-big-initial relative cursor-pointer">
                             <div class="pen shadow-3 cursor-pointer show-modal" data-toggle="modal" data-target="#profileModal">
                                 <i class="fa-solid fa-pen"></i>
@@ -110,8 +151,12 @@
                         </x-profileInitial>
                         <h5 class="mt-3">Hi, Mark Ely!</h5>
                         <div class="d-flex mt-3 gap-3">
-                            <button class="btn pb-2 border text-center form-control">Account</button>
-                            <button class="btn pb-2 border text-center form-control">Logout</button>
+                            <a href="{{route('account')}}">
+                                <button class="btn pb-2 border text-center form-control">Account</button>
+                            </a>
+                            <a href="{{route('logout')}}">
+                                <button class="btn pb-2 border text-center form-control">Logout</button>
+                            </a>
                         </div>
                     </div>
                 </div>

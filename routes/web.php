@@ -16,6 +16,16 @@ Route::get('/', function(){
 Route::middleware('auth')->group(function(){
     Route::get('/user', [UserController::class, 'index'])->name('user.index');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/material/{materialName}', function(){
+        return view('user.material');
+    })->name('user.material');
+    Route::get('/class/{className}', function(){
+        return view('user.class');
+    })->name('user.class');
+ 
+    Route::get('/account', function(){
+        return view('user.accountManagement');
+    })->name('account');
 });
 
 Route::middleware('guest')->group(function(){
