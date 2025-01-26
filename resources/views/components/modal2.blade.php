@@ -7,12 +7,14 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div>
-                   {{ $slot }}
-                   <div class="mt-4 float-end">
-                    <button class="btn mx-3 close-modal" data-dismiss="modal" aria-label="Close" data-target="#{{$id}}">No</button>
-                    <button class="btn btn-danger">Yes</button>
+                <form id="{{$id . 'ID'}}">
+                    @csrf
+                    {{$slot}}
+                    <div class="mt-4 float-end">
+                        <button type="button" class="btn mx-3 close-modal" data-dismiss="modal" aria-label="Close" data-target="#{{$id}}">No</button>
+                        <button type="submit" class="btn btn-danger close-modal" data-target="#{{$id}}">Yes</button>
                     </div>
+                </form>
                 </div>
             </div>
         </div>

@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
     public function login(){
+        if(Auth::check()){
+            return redirect(route('user.index'));
+        }
         return view('auth.login');
     }
     public function signup(){
@@ -29,7 +32,7 @@ class AuthController extends Controller
         $credentials = $request->only('email','password');
         if(Auth::attempt($credentials, $remeber_me)){
             $redirectUrl = session()->pull('url.intended', route('user.index'));
-            return response()->json(['success' => 'login Successfully', 'redirectUrl' => $redirectUrl]);
+            return response()->json(['success' => 'Login Successfully', 'redirectUrl' => $redirectUrl]);
         }
         return response()->json(['error' => 'Invalid Credentials']);
     }

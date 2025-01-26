@@ -36,6 +36,9 @@ body {
 .shadow-3{
     box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
 }
+.z-index-99{
+    z-index: 99;
+}
 .line{
     border-bottom:1px solid var(--dividing-border) ;
 }

@@ -70,10 +70,12 @@
                 
                 <ul class="list-unstyled">
                     <ul class="list-unstyled">
-                        <li class="d-flex align-items-center">
-                            <i class="fa-solid fa-box-archive"></i>
-                            <span>Archive</span>
-                        </li>
+                        <a href="{{route('user.archive')}}">
+                            <li class="d-flex align-items-center">
+                                <i class="fa-solid fa-box-archive"></i>
+                                <span>Archive</span>
+                            </li>
+                        </a>   
                         <li class="d-flex align-items-center">
                             <i class="fa-solid fa-gear"></i>                            
                             <span>Settings</span>
@@ -95,10 +97,14 @@
                         <div class="cursor-pointer add-btn" id="add-class-btn">
                             <i class="fa-solid fa-plus"></i>
                         </div>
-                        <div class="toggle-content shadow-1">
+                        <div class="toggle-content shadow-1 z-index-99">
                             <ul class="list-unstyled">
-                                <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#createClassModal">Create class</li>
-                                <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#joinClassModal">Join class</li>
+                                @if (auth()->user()->role == 'teacher')
+                                    <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#createClassModal">Create class</li>
+                                    <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#joinClassModal">Join class</li>
+                                @else
+                                    <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#joinClassModal">Join class</li>
+                                @endif
                             </ul>
                         </div>
                     </div>
@@ -107,7 +113,7 @@
                             <i class="fa-solid fa-bell" style="font-size: 24px; color: #333;"></i>
                             <span class="text-white" style="position: absolute; top: 8px; right: 5px; background-color: #ff0000;font-size:10px;border-radius: 50%; width:15px;height:15px; font-weight: bold; display: flex; justify-content: center; align-items: center;">2</span>
                         </div>
-                        <div class="toggle-content shadow-1">
+                        <div class="toggle-content shadow-1 z-index-99">
                             <ul class="list-unstyled">
                                 <a href="#" class="hover-bg">
                                     <li type="button" class="cursor-pointer">
