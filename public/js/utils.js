@@ -81,6 +81,11 @@ function changeProfile(){
             const reader = new FileReader();
 
             reader.onload = function(e) {
+                
+                $('#profile-change').css('background-image', `url(${e.target.result})`); 
+                $('#profile-change').css('background-size', 'cover'); 
+                $('#profile-change').css('background-position', 'center');
+                $('#profile-change span').text('');
                 $('#profile-change img').attr('src', e.target.result);
             }
       

@@ -6,5 +6,6 @@
     {{$slot}}
     @else
         <span>M</span>
+        {{$slot}}
     @endif
 </div>

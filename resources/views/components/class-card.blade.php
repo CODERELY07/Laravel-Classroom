@@ -10,7 +10,7 @@
             </div>
         </div>
         <div class="class-user-profile">
-            <x-profileInitial id="profile" class="profile-text shadow-3 text-big-initial relative cursor-pointer"/>
+            <x-profile-initial id="profile" class="profile-text shadow-3 text-big-initial relative cursor-pointer"/>
         </div>
         <div class="relative cursor-pointer">
             <div class="cursor-pointer px-1 pe-2 class-ellipsis">
