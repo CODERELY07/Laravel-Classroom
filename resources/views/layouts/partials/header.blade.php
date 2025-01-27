@@ -76,10 +76,12 @@
                                 <span>Archive</span>
                             </li>
                         </a>   
-                        <li class="d-flex align-items-center">
-                            <i class="fa-solid fa-gear"></i>                            
-                            <span>Settings</span>
-                        </li>
+                        <a href="{{route('user.setting')}}">
+                            <li class="d-flex align-items-center">
+                                <i class="fa-solid fa-gear"></i>                            
+                                <span>Settings</span>
+                            </li>
+                        </a>
                     </ul>
                 </ul>
             </nav>
@@ -146,15 +148,15 @@
             @endif
             {{-- Profile --}}
             <div class="relative profile-parent">
-                <x-profileInitial id="profile-class-btn" class="profile-text cursor-pointer"/>
+                <x-profile-initial  id="profile-class-btn" class="profile-text cursor-pointer relative"/>
                 <div class="toggle-content profile-content align-items-center shadow-1 py-3 px-5">
                     <div class="d-flex align-items-center flex-column">
                         <p class="text-center text-dark mb-4">calipjo.markely@gmail.com</p>
-                        <x-profileInitial id="profile-class-btn" class="profile-text shadow-3 text-big-initial relative cursor-pointer">
+                        <x-profile-initial id="profile-class-btn" class="profile-text shadow-3 text-big-initial relative cursor-pointer">
                             <div class="pen shadow-3 cursor-pointer show-modal" data-toggle="modal" data-target="#profileModal">
                                 <i class="fa-solid fa-pen"></i>
                             </div>
-                        </x-profileInitial>
+                        </x-profile-initial>
                         <h5 class="mt-3">Hi, Mark Ely!</h5>
                         <div class="d-flex mt-3 gap-3">
                             <a href="{{route('account')}}">

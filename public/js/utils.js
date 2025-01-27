@@ -71,3 +71,24 @@ export function confirmClass(classModalElem,classModalID,url){
         $(`#${classModalID}`).attr('action', `/${url}/${id}`)
     })
 }
+
+// display the new profile picture before upload or submited
+changeProfile()
+function changeProfile(){
+    $('#profile_picture').change(function(event) {
+        const file = event.target.files[0]; // Get the selected file
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                $('#profile-change img').attr('src', e.target.result);
+            }
+      
+            reader.readAsDataURL(file); 
+            if($('#profileSaveButton').length === 0){
+                $('#profileButtons').after(`<button id="profileSaveButton" type="submit" class="btn btn-primary w-100 mt-2">Save</button>`);
+            }
+            
+        }
+    });
+}

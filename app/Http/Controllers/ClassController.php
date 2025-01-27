@@ -12,12 +12,6 @@ use Str;
 
 class ClassController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    /**
-     * Show the form for creating a new resource.
-     */
 
      public function create(Request $request): JsonResponse
      {
@@ -177,6 +171,20 @@ class ClassController extends Controller
         ->where('teacher_id', $teacher_id)
         ->update(['status' => 'ok']);
         return response()->json(['success' => 'Classess unarchive Successfully']);
+    }
+
+    public function unenrollClass(string $id):JsonResponse{
+        $student_id = auth()->user()->id;
+        $isExistClass = DB::table('classess')->where('id', $id)->exists();
+        if(!$isExistClass){
+            return response()->json(['error' => 'You are not enrolled in this class']);
+        }
+        $isEnrolled = DB::table('class_members')->where('class_id', $id)->where('user_id', $student_id)->exists();
+        if(!$isEnrolled){
+            return response()->json(['error' => 'You are not enrolled in this class!']);
+        }
+        DB::table('class_members')->where('class_id', $id)->where('user_id', $student_id)->delete();
+        return response()->json(['success' => 'You are successfully unernolled in this class!']);
     }
     /**
      * Remove the specified resource from storage.

@@ -27,12 +27,20 @@
             <span>Update your profile picture to help people recognize you.</span>
         </div>
         <div class="mt-4">
-            <x-profileInitial id="profile-class-btn" class="profile-text text-xxbig-initial cursor-pointer mx-auto"/>
+            <x-profile-initial id="profile-change" class="profile-text text-xxbig-initial cursor-pointer relative mx-auto"/>
         </div>
-        <div class="mt-4 d-flex gap-5 justify-content-center mx-auto">
-            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-image"></i>
-            <span>Add profile Picture</span>
-        </button>
+  
+
+        <form action="{{route('user.changeProfile')}}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="file" id="profile_picture" name="profile_picture" class="d-none">
+            <label for="profile_picture" class="btn mt-4 btn btn-primary w-100 d-block" id="profileButtons">
+                <div class="d-flex gap-2 align-items-center justify-content-center w-100" >
+                    <i class="fa-solid fa-image"></i>
+                    <span>Add profile Picture</span>
+                </div>
+            </label>
+        </form>
         </div>
     </x-modal>
     {{-- Profile Class Modal --}}

@@ -14,9 +14,33 @@ Route::get('/', function(){
     return view('home.index');
 })->name('home');
 
+// Logged in users
 Route::middleware('auth')->group(function(){
-    Route::get('/user', [UserController::class, 'index'])->name('user.index');
-    Route::get('/user/archive', [UserController::class, 'arhive'])->name('user.archive');
+    // User Controller
+    Route::controller(UserController::class)->group(function(){
+        Route::get('/user', 'index')->name('user.index');
+        Route::get('/user/archive', 'archive')->name('user.archive');
+        Route::get('/user/setting', 'setting')->name('user.setting');
+        Route::get('/user/setting/name', 'changeName')->name('user.changeName');
+        Route::post('/user/setting/name/{id}', 'changeNamePost')->name('user.changeNamePost');
+        Route::get('/user/setting/account', 'accountSetting')->name('user.accountSetting');
+        Route::post('/user/setting/account/{id}', 'changePassword')->name('user.changePassword');
+        Route::post('/user/profile', 'changeProfile')->name('user.changeProfile');
+    });
+   
+    // Class Controller
+    Route::controller(ClassController::class)->group(callback: function(){
+        Route::get('/classess', 'show')->name('classess.show');
+        Route::get('/archive',  'showArchiveClass')->name('archive.show');
+        Route::post('/createClass', 'create')->name('createClass.post');
+        Route::post('/updateClass/{id}', 'update')->name('updateClass.post');
+        Route::post('/archiveClass/{id}', 'archive')->name('archiveClass.post');
+        Route::post('/unarchiveClass/{id}', 'unarchive')->name('unarchiveClass.post');
+        Route::post('/destroyClass/{id}', 'destroy')->name('destroyClass.post');
+        Route::post('/joinClass', 'join')->name('join.post');
+        Route::post('/unenrollClass/{id}', 'unenrollClass')->name('unenrollClass.post');
+    });
+
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/material/{materialName}', function(){
         return view('user.material');
@@ -28,24 +52,10 @@ Route::middleware('auth')->group(function(){
     Route::get('/account', function(){
         return view('user.accountManagement');
     })->name('account');
-    
-    // Route::get('/user/archive', function(){
-    //     return view('user.archiveclass');
-    // })->name('user.archive');
 
-    // Class Controller
-    Route::controller(ClassController::class)->group(callback: function(){
-        Route::get('/classess', 'show')->name('classess.show');
-        Route::get('/archive',  'showArchiveClass')->name('archive.show');
-        Route::post('/createClass', 'create')->name('createClass.post');
-        Route::post('/updateClass/{id}', 'update')->name('updateClass.post');
-        Route::post('/archiveClass/{id}', 'archive')->name('archiveClass.post');
-        Route::post('/unarchiveClass/{id}', 'unarchive')->name('unarchiveClass.post');
-        Route::post('/destroyClass/{id}', 'destroy')->name('destroyClass.post');
-        Route::post('/joinClass', 'join')->name('join.post');
-    });
 });
 
+// not logged in
 Route::middleware('guest')->group(function(){
     Route::controller(AuthController::class)->group(function(){
         Route::get('/login', 'login')->name('login');

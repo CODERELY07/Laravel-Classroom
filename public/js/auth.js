@@ -10,6 +10,8 @@ export function authFunctions() {
         handleRequest('createClass', 'Creating Please Wait...', 1000, false);
         handleRequest('editClassForm', 'Editing Please Wait...', 1000, false);
         handleRequest('joinClassForm', 'Joining Please Wait...', 1000, false);
+        handleRequest('changeName', 'Changing Please Wait...', 1000, false);
+        handleRequest('changePassword', 'Changing Please Wait...', 1000, false);
 
         // Fetch classes once for both teacher and archive
         fetchAllClasses();
@@ -18,6 +20,7 @@ export function authFunctions() {
         confirmClassAction('archiveClassModalID');
         confirmClassAction('unarchiveClassModalID');
         confirmClassAction('deleteClassModalID');
+        confirmClassAction('unenrollClassModalID');
 
         // Handle form submissions with AJAX
         function handleRequest(formId, beforeText, timeout = 1000, isDisable = true) {
@@ -111,6 +114,7 @@ export function authFunctions() {
                         confirmClass('archive-class','archiveClassModalID','archiveClass');
                         confirmClass('unarchive-class','unarchiveClassModalID','unarchiveClass');
                         confirmClass('delete-class','deleteClassModalID','destroyClass');
+                        confirmClass('unenroll-class','unenrollClassModalID','unenrollClass');
                     },
                     error: function (response) {
                         console.log(response.responseJSON);
