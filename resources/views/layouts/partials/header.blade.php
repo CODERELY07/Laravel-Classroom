@@ -15,58 +15,8 @@
                         </li>
                     </a>
                 </ul>
-                <ul class="list-unstyled pt-0 dropdown-class-parent">
-                    <span class="px-3 pb-1 d-block cursor-pointer" id="dropdown-class">
-                        <i class="fa-solid fa-caret-right"></i> 
-                        <i class="fa-solid fa-graduation-cap"></i>
-                        <span>Enrolled</span>
-                    </span>
-                    <li class="d-flex mt-2 align-items-center">
-                        <div class="profile-text text-small-initial">
-                            B
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                            <span class="m-0 p-0 semi-bold">BSIT</span>
-                            <span class="m-0 p-0 text-start text-small">2-A</span>
-                        </div>
-                    </li>
-                    <li class="d-flex align-items-center">
-                        <div class="profile-text text-small-initial">
-                            C
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                            <span class="m-0 p-0 semi-bold">CS</span>
-                            <span class="m-0 p-0 text-start text-small">2-A</span>
-                        </div>
-                    </li>
-                    <li class="d-flex align-items-center">
-                        <div class="profile-text text-small-initial">
-                            D
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                            <span class="m-0 p-0 semi-bold">Data Structure</span>
-                            <span class="m-0 p-0 text-start text-small">2-A</span>
-                        </div>
-                    </li>
-                    <li class="d-flex align-items-center">
-                        <div class="profile-text text-small-initial">
-                            I
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                            <span class="m-0 p-0 semi-bold">Information Management</span>
-                            <span class="m-0 p-0 text-start text-small">2-A</span>
-                        </div>
-                    </li>
-                    <li class="d-flex align-items-center">
-                        <div class="profile-text text-small-initial">
-                            O
-                        </div>
-                        <div class="d-flex flex-column justify-content-center">
-                            <span class="m-0 p-0 semi-bold">Object Oriented Programming</span>
-                            <span class="m-0 p-0 text-start text-small">2-A</span>
-                        </div>
-                    </li>
-                </ul>
+                
+                <x-enrolled-classess/>
                 
                 <ul class="list-unstyled">
                     <ul class="list-unstyled">

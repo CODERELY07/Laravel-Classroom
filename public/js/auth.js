@@ -21,6 +21,7 @@ export function authFunctions() {
         confirmClassAction('unarchiveClassModalID');
         confirmClassAction('deleteClassModalID');
         confirmClassAction('unenrollClassModalID');
+        confirmClassAction('changeProfile');
 
         // Handle form submissions with AJAX
         function handleRequest(formId, beforeText, timeout = 1000, isDisable = true) {
@@ -144,6 +145,9 @@ export function authFunctions() {
                             fetchAllClasses(); 
                             initializeClassEllipsis();
                             alert(response.success);
+                            if(response.redirectUrl){
+                                window.location.href = response.redirectUrl;
+                            }
                         }else if(response.error){
                             alert(response.error);
                         } else {

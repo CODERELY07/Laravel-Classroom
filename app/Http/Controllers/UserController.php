@@ -45,7 +45,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->name = $request->name;
         $user->save();
-        return response()->json(['success' => 'Name Updated Successfully!']);
+        return response()->json(['success' => 'Name Updated Successfully!','redirectUrl' => route('user.setting')]);
     }
 
     public function accountSetting(){
@@ -60,20 +60,27 @@ class UserController extends Controller
 
         User::where('id', $id)->update(['password' => Hash::make($request->newPass)]);
 
-        return response()->json(['success' => 'Password Changed Successfully!']);
+        return response()->json(['success' => 'Password Changed Successfully!','redirectUrl' => route('user.setting')]);
     }
-    public function changeProfile(Request $request){
+    public function changeProfile(Request $request):JsonResponse{
         $request->validate([
             'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
         $user_id = auth()->user()->id;
+        $currentUser = DB::table('users')->where('id', $user_id)->first();
+
         if ($image = $request->file('profile_picture')) {
             $destinationPath = public_path('images/');
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
+            if(!empty($currentUser->profile)){
+                $oldImage = $destinationPath . $currentUser->profile;
+                if($oldImage){
+                    unlink($oldImage);
+                }
+            }
             $image->move($destinationPath, $profileImage);
         }
         DB::table('users')->where('id', $user_id)->update(['profile' => $profileImage]);
-
-        return redirect(route('user.index'));
+        return response()->json(['success' => 'Profile Change Successfully!', 'redirectUrl' => route('user.index')]);
     }
 }

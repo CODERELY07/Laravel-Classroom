@@ -31,7 +31,7 @@
         </div>
   
 
-        <form action="{{route('user.changeProfile')}}" method="POST" enctype="multipart/form-data">
+        <form id="changeProfile" action="{{route('user.changeProfile')}}" enctype="multipart/form-data">
             @csrf
             <input type="file" id="profile_picture" name="profile_picture" class="d-none">
             <label for="profile_picture" class="btn mt-4 btn btn-primary w-100 d-block" id="profileButtons">

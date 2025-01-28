@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'BSIT')
+@section('title', "$data->classname")
 @section('content')
     <div class="sub-container">
         <div class="tabs mt-4">
@@ -18,13 +18,13 @@
                                 <i class="fa-solid fa-circle-exclamation" style="font-size: 20px"></i>
                             </div>
                             <div class="toggle-content" style="background: none;box-shadow:none">
-                                <p class="text-normal"><span class="semi-bold">Subject: </span>Web Development</p>
+                                <p class="text-normal"><span class="semi-bold">Subject: </span>{{$data->subject}}</p>
                             </div>
                         </div>
                         <div class="mt-5 pt-3">
-                            <h1 class="text-start text-medium">Classname</h1>
-                            <p class="text-white text-start text-normal">Section</p>
-                            <p class="text-white text-small text-start">Your Class code: <span>WY3DS3WDSA</span></p>
+                            <h1 class="text-start text-medium">{{$data->classname}}</h1>
+                            <p class="text-white text-start text-normal">{{$data->section}}</p>
+                            <p class="text-white text-small text-start">Your Class code: <span>{{$data->class_code}}</span></p>
                         </div>
                     </div>
                 </div>        

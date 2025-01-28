@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classess;
+use Auth;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -93,17 +94,26 @@ class ClassController extends Controller
          // Redirect to user index with success message
          return response()->json(['success' => 'Successfully joined the class!', 'redirectUrl' => route('user.index')]);
      }
+
+     public function show(): JsonResponse
+     {
+         $joinClassess = DB::table('class_members')
+                           ->where('user_id', auth()->user()->id)
+                           ->pluck('class_id');
+         
+         $classess = DB::table('classess')
+                       ->join('users', 'classess.teacher_id', '=', 'users.id') 
+                       ->whereIn('classess.id', $joinClassess)  
+                       ->where('classess.status', 'ok') 
+                       ->select('classess.*', 'users.*',  DB::raw('SUBSTRING(users.name, 1, 1) as first_letter'), DB::raw('users.id as user_id'), DB::raw('classess.id as class_id'))  
+                       ->get();
+
+         return response()->json([
+             'html' => view('layouts.partials.classess', ['classess' => $classess])->render(),
+             'classess' => $classess
+         ]);
+     }
      
-    public function show():JsonResponse{
-        $joinClassess = DB::table('class_members')
-                      ->where('user_id', auth()->user()->id)
-                      ->pluck('class_id');
-        $classess = Classess::whereIn('id', $joinClassess)->where('status','ok')->get(); 
-        return response()->json([
-            'html' => view('layouts.partials.classess', ['classess' => $classess])->render(),
-            'classess' => $classess
-        ]);
-    }
     /**
      * Update the specified resource in storage.
      */

@@ -2,6 +2,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\StreamController;
 use App\Http\Controllers\UserController;
 
 use Illuminate\Http\Request;
@@ -41,6 +42,11 @@ Route::middleware('auth')->group(function(){
         Route::post('/unenrollClass/{id}', 'unenrollClass')->name('unenrollClass.post');
     });
 
+    //Stream Controller
+    Route::controller(StreamController::class)->group(function(){
+        Route::get('/stream/{id}', 'show')->name('stream');
+    });
+
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/material/{materialName}', function(){
         return view('user.material');
@@ -48,11 +54,9 @@ Route::middleware('auth')->group(function(){
     Route::get('/class/{className}', function(){
         return view('user.class');
     })->name('user.class')->whereAlpha('className');
- 
     Route::get('/account', function(){
         return view('user.accountManagement');
     })->name('account');
-
 });
 
 // not logged in
