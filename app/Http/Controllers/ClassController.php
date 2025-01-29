@@ -16,22 +16,18 @@ class ClassController extends Controller
 
      public function create(Request $request): JsonResponse
      {
-         // Ensure only teachers can create a class
          if (auth()->user()->role !== 'teacher') {
              return response()->json(['error' => 'You do not have permission to create a class.'], 403);
          }
      
-         // Validate the input fields
          $request->validate([
              'classname' => 'required|string',
              'section' => 'required|string',
              'subject' => 'required|string',
          ]);
      
-         // Generate a random unique class code
          $classCode = Str::random(8);
      
-         // Insert the class record into the database
          $classId = DB::table('classess')->insertGetId([
              'classname' => $request->classname,
              'section' => $request->section,
@@ -43,7 +39,7 @@ class ClassController extends Controller
              'updated_at' => now(),
          ]);
      
-         // Automatically add the creator (teacher) to the class_members table
+
          DB::table('class_members')->insert([
              'class_id' => $classId,
              'user_id' => auth()->user()->id,
@@ -58,22 +54,22 @@ class ClassController extends Controller
      
      public function join(Request $request):JsonResponse
      {
-         // Validate the input data
+         
          $request->validate([
              'classcode' => 'required|string',
          ]);
      
          $class_code = $request->classcode;
          
-         // Find the class by class code
+
          $class = Classess::where('class_code', $class_code)->first();
      
-         // Check if the class exists
+        
          if (!$class) {
              return response()->json(['error' => 'Class not found']);
          }
      
-         // Check if the user is already a member of the class
+
          $alreadyJoined = DB::table('class_members')
              ->where('class_id', $class->id)
              ->where('user_id', auth()->user()->id)
@@ -83,7 +79,6 @@ class ClassController extends Controller
             return response()->json(['error' => 'You are already a member of this class.']);
         }
      
-         // Insert the new class member record
          DB::table('class_members')->insert([
              'class_id' => $class->id,
              'user_id' => auth()->user()->id,
@@ -91,7 +86,7 @@ class ClassController extends Controller
              'joined_at' => now(),
          ]);
      
-         // Redirect to user index with success message
+
          return response()->json(['success' => 'Successfully joined the class!', 'redirectUrl' => route('user.index')]);
      }
 
@@ -137,14 +132,13 @@ class ClassController extends Controller
             return response()->json(['error' => 'Class not found or you do not have permission to update this class.'], 404);
         }
     
-        // Validate the input data
         $request->validate([
             'classname' => 'required|string',
             'section' => 'required|string',
             'subject' => 'required|string',
         ]);
     
-        // Update the class
+
         $class->update($request->all());
     
         return response()->json(['success' => 'Class updated successfully.']);

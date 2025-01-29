@@ -27,7 +27,6 @@ export function effectsFunctions(){
     
         /* toggle hide and show dropdown */
     
-    
         /* enrolled class dropdown  */
         $('#dropdown-class').on('click', function(){
             let classToggle = $(this).parent().toggleClass('active');
@@ -77,5 +76,33 @@ export function effectsFunctions(){
              // Save the current active tab to localStorage
              localStorage.setItem('activeTab', tabId);
          });
+
+        //  Unenroll students
+        $('.unenroll-checkbox').on('change', function(){
+            let checkboxes = $('.unenroll-checkbox:checked');
+
+            if(checkboxes.length > 0){
+                $('#unenroll-selected').removeClass('d-none').addClass('d-block');
+            }else{
+                $('#unenroll-selected').removeClass('d-block').addClass('d-none');
+            }
+        });
+
+        $('#unenroll-selected').on('click', function (e) {
+            e.preventDefault();
+    
+            let checkboxes = $('.unenroll-checkbox:checked');
+    
+            if (checkboxes.length === 0) {
+                alert('Please select at least one student to remove.');
+                return;
+            }else{
+                $(this).removeClass('d-none').addClass('d-block');
+            }
+    
+            if (confirm('Are you sure you want to remove the selected students?')) {
+                $('#unenroll-form').submit();
+            }
+        });
     });    
 }

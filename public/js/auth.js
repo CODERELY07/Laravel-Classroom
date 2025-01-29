@@ -22,6 +22,8 @@ export function authFunctions() {
         confirmClassAction('deleteClassModalID');
         confirmClassAction('unenrollClassModalID');
         confirmClassAction('changeProfile');
+        confirmClassAction('unenroll-form');
+
 
         // Handle form submissions with AJAX
         function handleRequest(formId, beforeText, timeout = 1000, isDisable = true) {
@@ -49,14 +51,16 @@ export function authFunctions() {
                     },
                     success: (response) => {
                         let MsgElement = $(`#${formId}`).siblings('.msg');
+                        console.log(response.error);
                         if (response.success) {
                             button.text('Done');
                             MsgElement.text(response.success).addClass('alert-success').removeClass('alert-danger').show();
                             setTimeout(function () {
                                 MsgElement.removeClass('alert-success').hide();
                             }, 3000);
-
+                            console.log(response.redirectUrl);
                             if (response.redirectUrl) {
+                              
                                 $(button).css({ backgroundColor: 'transparent', color: '#000000b3' });
                                 $(button).text(beforeText);
                                 setTimeout(() => {
@@ -72,6 +76,7 @@ export function authFunctions() {
                             setTimeout(function () {
                                 MsgElement.removeClass('alert-danger').hide();
                             }, 3000);
+                            console.log(response.error);
                         }
                         $(`#${formId}`)[0].reset();
                         $(`#${formId}`).find('.text-danger').text('');
@@ -116,6 +121,7 @@ export function authFunctions() {
                         confirmClass('unarchive-class','unarchiveClassModalID','unarchiveClass');
                         confirmClass('delete-class','deleteClassModalID','destroyClass');
                         confirmClass('unenroll-class','unenrollClassModalID','unenrollClass');
+                        // confirmClass('unenroll-class','unenrollClassModalID','unenrollClass');
                     },
                     error: function (response) {
                         console.log(response.responseJSON);

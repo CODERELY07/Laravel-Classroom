@@ -24,7 +24,11 @@ class User extends Authenticatable
         'profile',
         'role',
     ];
-
+    public function classes()
+    {
+        // Define many-to-many relationship with Classess model
+        return $this->belongsToMany(Classess::class, 'class_members');
+    }
     /**
      * The attributes that should be hidden for serialization.
      *

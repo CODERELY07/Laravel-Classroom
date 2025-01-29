@@ -24,7 +24,9 @@
                         <div class="mt-5 pt-3">
                             <h1 class="text-start text-medium">{{$data->classname}}</h1>
                             <p class="text-white text-start text-normal">{{$data->section}}</p>
+                            @if(auth()->user()->role == 'teacher')
                             <p class="text-white text-small text-start">Your Class code: <span>{{$data->class_code}}</span></p>
+                            @endif
                         </div>
                     </div>
                 </div>        
@@ -55,38 +57,53 @@
                 </div>
     
                 <ul class="list-unstyled">
-                    <li class="d-flex border-bottom pb-2 gap-2 pt-2 align-items-center mb-2">                        
-                        {{-- <img src="" alt="Profile" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;"> --}}
-                        <div class="profile-text text-small-initial" >
-                            M
-                        </div>
-                        <p class="p-0 m-0">
-                            Mark Ely
-                        </p>
-                    </li>
+                    @foreach ($teachers as $teacher)
+                        <li class="d-flex border-bottom pb-2 gap-2 pt-2 align-items-center mb-2">
+                            <div class="profile-text shadow-3 text-small-initial relative cursor-pointer">
+                                @if ($teacher->profile)
+                                    <img style="position:absolute;width:100%;height:100%;border-radius:inherit;object-fit:cover" src="{{ asset('images/' . $teacher->profile) }}" alt="Profile Picture"/>
+                                @else
+                                    {{ strtoupper(substr($teacher->name, 0, 1)) }}  
+                                @endif
+                            </div>
+                            <p class="p-0 m-0">{{ $teacher->name }}</p>
+                        </li>
+                    @endforeach
                 </ul>
-    
                 <!-- Display Students -->
                 <div class="border-bottom d-flex justify-content-between align-items-center pb-3">
-                    <h3>Students</h3>
-                    <p type="button" id="unenroll-selected" ><i class="fa-solid fa-user-minus"></i></p>
+                    <h2 class="text-start">Students</h2>
+                    @if ($teachers->contains('id', auth()->user()->id))
+                        <p type="button" class="d-none" id="unenroll-selected">
+                            <i class="fa-solid fa-user-minus"></i> 
+                        </p>
+                    @endif
                 </div>
-
-                <form id="unenroll-form">
-                    <ul class="list-unstyled">
-                        <li class="d-flex border-bottom pb-2 pt-2 align-items-center mb-2">
-                            <label for="" class="d-flex gap-2">
-                                {{-- <img src="" alt="Profile" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 5px;"> --}}
-                                <div class="profile-text text-small-initial" >
-                                    M
+                
+                <form id="unenroll-form" action="{{ route('unenroll', ['class_id' => $data->id]) }}">
+                    @csrf
+                    @foreach ($students as $student)
+                        <li class="d-flex border-bottom pb-2 gap-2 pt-2 align-items-center mb-2">
+                            <label class="d-flex gap-2 align-items-center">
+                                <div class="profile-text shadow-3 text-small-initial relative cursor-pointer">
+                                    @if ($student->profile)
+                                        <img style="position:absolute;width:100%;height:100%;border-radius:inherit;object-fit:cover" 
+                                             src="{{ asset('images/' . $student->profile) }}" 
+                                             alt="Profile Picture"/>
+                                    @else
+                                        {{ strtoupper(substr($student->name, 0, 1)) }}  
+                                    @endif
                                 </div>
-                                <p class="text-start mt-1">Name</p>
+                                <p class="p-0 m-0">{{ $student->name }}</p>
                             </label>
-                            <input type="checkbox" name="unenroll[]" value="1" class="unenroll-checkbox" style="margin-left: auto;">
+                            @if ($teachers->contains('id', auth()->user()->id))
+                                <input type="checkbox" name="unenroll[]" value="{{ $student->id }}" class="unenroll-checkbox cursor-pointer" style="margin-left: auto;">
+                            @endif
+                           
                         </li>
-                    </ul>
+                    @endforeach
                 </form>
-
+                
                 {{-- Add stutdent Modal --}}
                 <x-modal id="addStudentModal">
                     <x-slot name="heading">

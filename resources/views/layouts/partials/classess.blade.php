@@ -6,7 +6,7 @@
 @else
 @foreach ($classess as $class)
     @if($class->status == 'ok')
-    <x-class-card classID="{{$class->class_id}}" classname="{{$class->name}}" section="{{$class->section}}" userID="{{$class->user_id}}" teacherName="{{$class->name}}" teacherProfile="{{$class->profile}}" firstLetter="{{$class->first_letter}}" >
+    <x-class-card classID="{{$class->class_id}}" classname="{{$class->classname}}" section="{{$class->section}}" userID="{{$class->user_id}}" teacherName="{{$class->name}}" teacherProfile="{{$class->profile}}" firstLetter="{{$class->first_letter}}" >
         @if (auth()->user()->role === 'teacher')
             <li type="button" class="cursor-pointer show-modal text-dark edit-class" data-toggle="modal" data-target="#editClassModal"  data-id="{{$class->id}}"  data-classname={{$class->classname}} data-section={{$class->section}} data-subject={{$class->subject}}>Edit class</li>
             <li type="button" class="cursor-pointer show-modal text-dark archive-class" data-toggle="modal" data-target="#archiveClassModal" data-id="{{$class->id}}">Archive class</li>
@@ -15,7 +15,7 @@
         @endif
     </x-class-card>
     @elseif ($class->status == 'archive')
-    <x-class-card  classID="{{$class->class_id}}" classname="{{$class->name}}" section="{{$class->section}}" userID="{{$class->user_id}}" teacherName="{{$class->name}}" teacherProfile="{{$class->profile}}" firstLetter="{{$class->first_letter}}" >
+    <x-class-card  classID="{{$class->class_id}}" classname="{{$class->classname}}" section="{{$class->section}}" userID="{{$class->user_id}}" teacherName="{{$class->name}}" teacherProfile="{{$class->profile}}" firstLetter="{{$class->first_letter}}" >
         @if (auth()->user()->role === 'teacher')
             <li type="button" class="cursor-pointer show-modal text-dark unarchive-class" data-toggle="modal" data-target="#unarchiveClassModal" data-id="{{$class->id}}">Unarchive class</li>
             <li type="button" class="cursor-pointer show-modal text-dark delete-class" data-toggle="modal" data-target="#deleteClassModal"  data-id="{{$class->id}}"  data-classname={{$class->classname}} data-section={{$class->section}} data-subject={{$class->subject}}>Delete class</li>

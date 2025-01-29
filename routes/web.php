@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function(){
     //Stream Controller
     Route::controller(StreamController::class)->group(function(){
         Route::get('/stream/{id}', 'show')->name('stream');
+        Route::post('/stream/{class_id}/unenroll', [StreamController::class, 'unenrollStudents'])->name('unenroll');
+
     });
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
