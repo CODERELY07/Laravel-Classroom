@@ -17,17 +17,16 @@
                     <h2 class="text-start">Questions</h2> 
                 </div>
                 <div>
-                    @foreach ($informations as $information)
+                    @foreach ($questions as $question)
                     <div class="material mt-2 gap-2 pb-2 d-flex align-items-center border-bottom " style="width:100%;">
-                        <a href="{{route('question.show', [$information->id])}}" class="material mt-2 gap-2 pb-2 d-flex align-items-center " style="width:100%;">
+                        <a href="{{route('question.show', [$question->id])}}" class="material mt-2 gap-2 pb-2 d-flex align-items-center " style="width:100%;">
                             <div class="profile-text text-small-initial">
                                 <i class="fa-solid fa-question"></i>
                             </div>
                             <div class="d-flex justify-content-between align-items-center" style="width:100%;">
-                                <h6 class="material-title p-0 m-0">{{$information->title}}</h6>
-                                <small>{{$information->due_date}}</small>
+                                <h6 class="material-title p-0 m-0">{{$question->title}}</h6>
+                                <small>{{$question->due_date}}</small>
                             </div>
-                           
                         </a>
                         <div class="relative cursor-pointer">
                             <div class="cursor-pointer px-1 pe-2 class-ellipsis">
@@ -40,7 +39,6 @@
                             </div>
                         </div>
                     </div>
-                       
                     @endforeach
                 </div>
             </div>
@@ -86,7 +84,5 @@
                 </form>
             </div>
         </main>
-    @else
-        <p>I am a student</p>
-    @endif
+        @endif
 </div>

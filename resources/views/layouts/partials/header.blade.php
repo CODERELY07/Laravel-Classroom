@@ -15,7 +15,7 @@
                         </li>
                     </a>
                 </ul>
-                {{-- <x-enrolled-classess/> --}}
+                <x-enrolled-classess/>
                 <ul class="list-unstyled">
                     <ul class="list-unstyled">
                         <a href="{{route('user.archive')}}">

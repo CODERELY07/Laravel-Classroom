@@ -18,12 +18,9 @@ return new class extends Migration
             $table->foreign('class_member_id')->references('id')->on('class_members')->onDelete('cascade');
             $table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade');  
             $table->text('answer'); 
-            $table->integer('grade'); 
+            $table->integer('grade')->nullable(); 
             $table->timestamps();
         });
-
-
-
     }
 
     /**

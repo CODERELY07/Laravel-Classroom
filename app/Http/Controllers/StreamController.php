@@ -70,6 +70,6 @@ class StreamController extends Controller
                 'joined_at' => now(),
             ]);
         }
-        return response()->json(['message' => $user]);
+        return response()->json( ['success' => 'Users added Successfully!','redirectUrl' => route('stream', [$class->id])]);
     }
 }

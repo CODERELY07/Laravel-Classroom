@@ -20,7 +20,7 @@ class ClassWork extends Component
      */
     public function render(): View|Closure|string
     {
-        $informations = Question::where('class_id', $this->classID)->get();
-        return view('components.class-work', ['informations' => $informations]);
+        $questions = Question::where('class_id', $this->classID)->get();
+        return view('components.class-work', ['questions' => $questions]);
     }
 }

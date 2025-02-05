@@ -175,11 +175,5 @@ export function authFunctions() {
                 });
             });
         }
-
-        function fetchData(){
-            $.ajax({
-              
-            });
-        }
     });
 }

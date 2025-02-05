@@ -44,21 +44,22 @@
                     </a> --}}
                 </div>
             </div>
-            {{-- Classword --}}
+            {{-- Classwork --}}
             <x-class-work :classID="$data->id" classID="{{$data->id}}"/>
     
-            {{-- Classword --}}
+            {{-- Classwork --}}
             <div id="people" class="tab-content">
                 <div class="border-bottom d-flex justify-content-between align-items-center pb-3">
                     <h2 class="text-start">Teachers</h2>
                     <div class="d-flex align-items-center gap-1">
                         <div class="align-items-center justify-content-center gap-3 d-flex">
                             <p class="m-0">1 Students</p>
+                            @if(auth()->user()->role == 'teacher')
                             <p class="m-0 cursor-pointer show-modal" data-toggle="modal" data-target="#addStudentModal"><i class="fa-solid fa-user-plus"></i></p>
+                            @endif
                         </div>
                     </div>
                 </div>
-    
                 <ul class="list-unstyled">
                     @foreach ($teachers as $teacher)
                         <li class="d-flex border-bottom pb-2 gap-2 pt-2 align-items-center mb-2">
@@ -102,18 +103,15 @@
                             @if ($teachers->contains('id', auth()->user()->id))
                                 <input type="checkbox" name="unenroll[]" value="{{ $student->id }}" class="unenroll-checkbox cursor-pointer" style="margin-left: auto;">
                             @endif
-                           
                         </li>
                     @endforeach
                 </form>
-                
                 {{-- Add stutdent Modal --}}
                 <x-modal id="addStudentModal">
                     <x-slot name="heading">
                         Add Users
                     </x-slot>
                     <x-search-form action="/stream/search/{{$data->id}}" id="{{$data->id}}"/>
-
                 </x-modal>
             </div>
         </div>

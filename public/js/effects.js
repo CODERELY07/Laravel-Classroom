@@ -213,7 +213,9 @@ export function effectsFunctions(){
             processData: false,  
             contentType: false,  
             success: function(response) {
-                console.log(response); 
+                if(response.success){
+                    window.location.href = response.redirectUrl;
+                } 
             },
             error: function(xhr, status, error) {
                 console.error(xhr.responseText);
@@ -222,6 +224,7 @@ export function effectsFunctions(){
         });
 
     });
+
     // question generate inputs
         function generateInputs(count) {
             let inputContainer = $("#questionInputs");
@@ -240,7 +243,5 @@ export function effectsFunctions(){
             let selectedValue = $(this).val();
             generateInputs(selectedValue);
         });
-
-    
     });    
 }

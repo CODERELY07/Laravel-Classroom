@@ -32,6 +32,7 @@
                 @endif
             </h6>
         </div>
+        @if(auth()->user()->role == 'student')
         <div class="shadow-3 p-4 rounded">
             <p>Your Answer:</p>
             <form action="{{route('turnIn')}}" method="POST">
@@ -43,6 +44,7 @@
                 <input type="submit" class="btn btn-primary mt-3 w-100" value="Turn In">
             </form>
         </div>
+        @endif
         {{-- <div class="shadow-3 mt-3 p-4 rounded">
             <div class="d-flex justify-content-between align-items-center p-2">
                 <input type="text" style="border:none;outline:none;width:100%;" placeholder="Class Comment">

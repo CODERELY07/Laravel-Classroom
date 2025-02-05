@@ -72,11 +72,11 @@ export function confirmClass(classModalElem,classModalID,url){
     })
 }
 
-// display the new profile picture before upload or submited
+// display the new profile picture before upload
 changeProfile()
 function changeProfile(){
     $('#profile_picture').change(function(event) {
-        const file = event.target.files[0]; // Get the selected file
+        const file = event.target.files[0]; 
         if (file) {
             const reader = new FileReader();
 
