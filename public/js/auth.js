@@ -12,6 +12,7 @@ export function authFunctions() {
         handleRequest('joinClassForm', 'Joining Please Wait...', 1000, false);
         handleRequest('changeName', 'Changing Please Wait...', 1000, false);
         handleRequest('changePassword', 'Changing Please Wait...', 1000, false);
+        handleRequest('createquestionForm', 'Creating Please Wait...', 2000, false);
 
         // Fetch classes once for both teacher and archive
         fetchAllClasses();
@@ -23,6 +24,7 @@ export function authFunctions() {
         confirmClassAction('unenrollClassModalID');
         confirmClassAction('changeProfile');
         confirmClassAction('unenroll-form');
+        
 
 
         // Handle form submissions with AJAX
@@ -51,14 +53,14 @@ export function authFunctions() {
                     },
                     success: (response) => {
                         let MsgElement = $(`#${formId}`).siblings('.msg');
-                        console.log(response.error);
+                        // console.log(response.error);
                         if (response.success) {
                             button.text('Done');
                             MsgElement.text(response.success).addClass('alert-success').removeClass('alert-danger').show();
                             setTimeout(function () {
                                 MsgElement.removeClass('alert-success').hide();
                             }, 3000);
-                            console.log(response.redirectUrl);
+                            // console.log(response.redirectUrl);
                             if (response.redirectUrl) {
                               
                                 $(button).css({ backgroundColor: 'transparent', color: '#000000b3' });
@@ -121,7 +123,6 @@ export function authFunctions() {
                         confirmClass('unarchive-class','unarchiveClassModalID','unarchiveClass');
                         confirmClass('delete-class','deleteClassModalID','destroyClass');
                         confirmClass('unenroll-class','unenrollClassModalID','unenrollClass');
-                        // confirmClass('unenroll-class','unenrollClassModalID','unenrollClass');
                     },
                     error: function (response) {
                         console.log(response.responseJSON);
@@ -172,6 +173,12 @@ export function authFunctions() {
                         console.log(response.responseJSON);
                     }
                 });
+            });
+        }
+
+        function fetchData(){
+            $.ajax({
+              
             });
         }
     });

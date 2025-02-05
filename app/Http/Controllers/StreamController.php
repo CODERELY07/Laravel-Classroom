@@ -16,6 +16,9 @@ class StreamController extends Controller
         $teachers = $classess->teachers()->get();
         $students = $classess->students()->get();
         $class = DB::table('classess')->where('id', $id)->first();
+        if(empty($class)){
+            return view('user.index');
+        }
         return view('user.stream', ['data' => $class, 'teachers' => $teachers , 'students' => $students]);
     }
     public function unenrollStudents(Request $request, $class_id):JsonResponse
@@ -28,5 +31,45 @@ class StreamController extends Controller
         }
         return response()->json(['error' => 'No students selected!', 'redirectUrl' => route('stream', [$class_id])]);
     }
+    public function search(Request $request, string $id): JsonResponse
+    {
+        $data = $request->get('data');
+    
+        if (empty($data) || strlen($data) < 3) {
+            return response()->json([
+                'data' => []
+            ]);
+        }
+    
+        $users = DB::table('users')
+        ->leftJoin('class_members', 'users.id', '=', 'class_members.user_id')
+        ->where('users.email', 'like', '%' . $data . '%')
+        ->select('users.*', DB::raw('COALESCE(class_members.class_id, "default_value") as class_id'))
+        ->where(function ($query) use ($id) {
+            $query->whereNull('class_members.class_id')
+                  ->orWhere('class_members.class_id', '!=', $id);
+        })
+        ->get();
 
+        return response()->json([
+            'data' => $users
+        ]);
+    }
+    public function store(Request $request)
+    {
+        $addedUserIds = $request->input('added_users', []);
+        $class = Classess::find($request->input('id')); 
+
+        foreach ($addedUserIds as $userId) {
+            $user = User::find($userId);
+           
+            DB::table('class_members')->insert([
+                'class_id' => $class->id,
+                'user_id' => $user->id,
+                'role' => $user->role,
+                'joined_at' => now(),
+            ]);
+        }
+        return response()->json(['message' => $user]);
+    }
 }

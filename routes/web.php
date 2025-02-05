@@ -1,7 +1,9 @@
 <?php
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClassController;
+use App\Http\Controllers\ClassMemberQuestionAnswersController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\StreamController;
 use App\Http\Controllers\UserController;
 
@@ -46,19 +48,23 @@ Route::middleware('auth')->group(function(){
     Route::controller(StreamController::class)->group(function(){
         Route::get('/stream/{id}', 'show')->name('stream');
         Route::post('/stream/{class_id}/unenroll', [StreamController::class, 'unenrollStudents'])->name('unenroll');
-
+        Route::get('/stream/search/{id}', 'search')->name('stream.search');
+        Route::post('/stream/save', 'store')->name('stream.store');
     });
 
+    // Question Controller
+    Route::resource('question', QuestionController::class);
+
+    
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/material/{materialName}', function(){
-        return view('user.material');
-    })->name('user.material')->whereAlpha('materialName');
     Route::get('/class/{className}', function(){
         return view('user.class');
     })->name('user.class')->whereAlpha('className');
     Route::get('/account', function(){
         return view('user.accountManagement');
     })->name('account');
+
+    Route::post('/question/turnin', ClassMemberQuestionAnswersController::class)->name('turnIn');
 });
 
 // not logged in

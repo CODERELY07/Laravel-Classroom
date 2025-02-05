@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamp('joined_at')->useCurrent()->nullable();
             $table->foreign('class_id')->references('id')->on('classess')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            
         });
     }
 

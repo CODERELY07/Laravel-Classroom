@@ -30,9 +30,8 @@
                         </div>
                     </div>
                 </div>        
-                
                 <div class="materials-section">
-                    <a href="{{route('user.material', ['material'])}}" class="material-item mt-3 p-3 gap-3 d-flex align-items-center">
+                    {{-- <a href="{{route('user.material', ['material'])}}" class="material-item mt-3 p-3 gap-3 d-flex align-items-center">
                         <div class="profile-text text-small-initial">
                             <i class="fa-solid fa-book-open"></i>
                         </div>
@@ -42,9 +41,13 @@
                                 This is the content content
                             </p>
                         </div>
-                    </a>
+                    </a> --}}
                 </div>
             </div>
+            {{-- Classword --}}
+            <x-class-work :classID="$data->id" classID="{{$data->id}}"/>
+    
+            {{-- Classword --}}
             <div id="people" class="tab-content">
                 <div class="border-bottom d-flex justify-content-between align-items-center pb-3">
                     <h2 class="text-start">Teachers</h2>
@@ -109,28 +112,8 @@
                     <x-slot name="heading">
                         Add Users
                     </x-slot>
-                    
-                    <ul id="addedUsersList" class="list-unstyled mb-3">
-                        <li class="my-2 d-flex justify-content-between align-items-center">
-                            <p>Sam Smith</p>
-                            <p type="button" class="btn-sm remove-user" data-id=""><i class="fa-solid fa-user-minus"></i></p>
-                        </li>
-                    </ul>
-                    <form id="userSearch">
-                        <input type="hidden" name="id" id="class_id" value="">
-                        <div class="d-flex">
-                             <!-- Added users  -->
-                            <input type="text" id="userSearchInput" class="form-control" name="email" placeholder="Search by email">
-                        </div>
-                        <div id="searchResults" class="mt-2">
-                            <!-- Live search results -->
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <p>Brook D. Danger</p>
-                                <p type="button" class="btn-sm  add-user" data-id="" data-role="" data-name=""><i class="fa-solid fa-user-plus"></i></p>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary float-end mt-5">Save Changes</button>
-                    </form>
+                    <x-search-form action="/stream/search/{{$data->id}}" id="{{$data->id}}"/>
+
                 </x-modal>
             </div>
         </div>

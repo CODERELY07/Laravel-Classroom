@@ -29,8 +29,6 @@
         <div class="mt-4">
             <x-profile-initial id="profile-change" class="profile-text text-xxbig-initial cursor-pointer relative mx-auto"/>
         </div>
-  
-
         <form id="changeProfile" action="{{route('user.changeProfile')}}" enctype="multipart/form-data">
             @csrf
             <input type="file" id="profile_picture" name="profile_picture" class="d-none">

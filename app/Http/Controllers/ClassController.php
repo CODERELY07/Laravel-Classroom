@@ -61,10 +61,7 @@ class ClassController extends Controller
      
          $class_code = $request->classcode;
          
-
-         $class = Classess::where('class_code', $class_code)->first();
-     
-        
+         $class = Classess::where('class_code', $class_code)->first();   
          if (!$class) {
              return response()->json(['error' => 'Class not found']);
          }

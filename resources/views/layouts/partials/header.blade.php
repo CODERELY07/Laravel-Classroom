@@ -15,9 +15,7 @@
                         </li>
                     </a>
                 </ul>
-                
-                <x-enrolled-classess/>
-                
+                {{-- <x-enrolled-classess/> --}}
                 <ul class="list-unstyled">
                     <ul class="list-unstyled">
                         <a href="{{route('user.archive')}}">
@@ -36,9 +34,19 @@
                 </ul>
             </nav>
              {{-- Navigation --}}
+             {{-- Title --}}
             <span class="pl-3">
+                @if(trim($__env->yieldContent('title')) == "Classroom")
                 @yield('title')
+            @else
+                <a href="{{ route('user.index') }}">
+                    Classroom  <i class="fa-solid fa-greater-than mx-2"></i>
+                    @yield('title')
+                </a>
+            @endif
+            
             </span>
+             {{-- Title --}}
         </div>
         <div class="d-flex align-items-center gap-3">
             {{-- join and create class --}}
@@ -46,7 +54,7 @@
             <div class="relative">
                 <div class="d-flex gap-2">
                     <div class="relative">
-                        <div class="cursor-pointer add-btn" id="add-class-btn">
+                        <div class="cursor-pointer add-btn" id="add-class-btn" >
                             <i class="fa-solid fa-plus"></i>
                         </div>
                         <div class="toggle-content shadow-1 z-index-99">
@@ -60,7 +68,7 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="relative">
+                    {{-- <div class="relative">
                         <div class="cursor-pointer add-btn relative" id="bell-btn">
                             <i class="fa-solid fa-bell" style="font-size: 24px; color: #333;"></i>
                             <span class="text-white" style="position: absolute; top: 8px; right: 5px; background-color: #ff0000;font-size:10px;border-radius: 50%; width:15px;height:15px; font-weight: bold; display: flex; justify-content: center; align-items: center;">2</span>
@@ -89,7 +97,7 @@
                                 </a>
                             </ul>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
             @endif
@@ -106,9 +114,9 @@
                         </x-profile-initial>
                         <h5 class="mt-3">Hi, Mark Ely!</h5>
                         <div class="d-flex mt-3 gap-3">
-                            <a href="{{route('account')}}">
+                            {{-- <a href="{{route('account')}}">
                                 <button class="btn pb-2 border text-center form-control">Account</button>
-                            </a>
+                            </a> --}}
                             <a href="{{route('logout')}}">
                                 <button class="btn pb-2 border text-center form-control">Logout</button>
                             </a>

@@ -24,6 +24,7 @@ class User extends Authenticatable
         'profile',
         'role',
     ];
+    
     public function classes()
     {
         // Define many-to-many relationship with Classess model

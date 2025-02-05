@@ -7,7 +7,6 @@ export function effectsFunctions(){
         /* toggle hide and show dropdown */
         function toggle(elemID){
             const element = `#${elemID}`;
-            console.log(element);
             $(document).on('click', element, function(e){
                 e.stopPropagation();
                 $('.toggle-content').not($(element).siblings('.toggle-content')).removeClass('active');
@@ -24,6 +23,7 @@ export function effectsFunctions(){
         toggle('profile-class-btn');
         toggle('show-subject');
         toggle('bell-btn');
+        toggle('create-classwork-btn');
     
         /* toggle hide and show dropdown */
     
@@ -37,9 +37,7 @@ export function effectsFunctions(){
             }
             console.log($(this).parent().attr('class'));
         });
-        /* enrolled class dropdown  */
-        
-        /* show and hide nav links */
+       
         $('#bar').on('click', function(){
            $('.nav').toggleClass('active');
         })
@@ -104,5 +102,145 @@ export function effectsFunctions(){
                 $('#unenroll-form').submit();
             }
         });
+
+        // Materials Create toggles
+        $(".toggle-classwork").on("click", function () {
+            const target = $(this).data("target");
+            $(".remove-toggle").addClass("d-none").removeClass("d-block");
+            $(target).removeClass("d-none").addClass("d-block");
+        });
+
+        // Initialize an array to store added users' IDs
+        let addedUserIds = [];
+
+        $('#userSearchInput').on('input', function() {
+            const data = $(this).val();  
+            let url = $(this).parent().parent().attr('action');
+           
+            if (data.length > 0) {
+                $.ajax({
+                    url: url, 
+                    method: "GET",
+                    data: { data: data },
+                    success: function(response) {
+                        $('#searchResults').empty();
+                        console.log(response.data);
+
+                        if (response.data.length > 0) {
+                            // Filter out the users that are already added
+                            let filteredUsers = response.data.filter(function(user) {
+                                return !addedUserIds.includes(user.id);
+                            });
+
+                            if (filteredUsers.length > 0) {
+                                filteredUsers.forEach(function(user) {
+                                    $('#searchResults').append(
+                                        '<div class="d-flex justify-content-between align-items-center mb-2">' +
+                                            '<p>' + user.email + '</p>' +
+                                            '<p class="btn-sm add-user cursor-pointer" data-id="' + user.id + '" data-email="' + user.email + '">' +
+                                                '<i class="fa-solid fa-user-plus"></i>' +
+                                            '</p>' +
+                                        '</div>'
+                                    );
+                                });
+                            } else {
+                                $('#searchResults').append('<p>No users found</p>');
+                            }
+                        } else {
+                            $('#searchResults').append('<p>No users found</p>');
+                        }
+                    }
+                });
+            } else {
+                $('#searchResults').empty();
+            }
+        });
+
+        $('#searchResults').on('click', '.add-user', function() {
+            var userId = $(this).data('id');
+            var email = $(this).data('email');
+
+            addedUserIds.push(userId);
+
+            $('#addedUsersList').append(
+                '<li class="my-2 d-flex justify-content-between align-items-center">' +
+                    '<p>' + email + '</p>' +
+                    '<p class="btn-sm remove-user cursor-pointer" data-id="' + userId + '">' +
+                        '<i class="fa-solid fa-user-minus"></i>' +
+                    '</p>' +
+                '</li>'
+            );
+
+            $(this).parent().remove();
+        });
+
+        $('#addedUsersList').on('click', '.remove-user', function() {
+            var userId = $(this).data('id');
+            addedUserIds = addedUserIds.filter(function(id) {
+                return id !== userId;
+            });
+
+
+            $(this).parent().remove();
+        });
+
+
+    // save users
+    $('#userSearch').on('submit', function(e) {
+        e.preventDefault(); 
+    
+        $('#userSearch input[name="added_users[]"]').remove();
+    
+        $('#addedUsersList li').each(function() {
+            var userId = $(this).find('.remove-user').data('id');
+            $('<input>', {
+                type: 'hidden',
+                name: 'added_users[]', 
+                value: userId
+            }).appendTo('#userSearch'); 
+        });
+    
+        const url = $(this).attr('action');
+        console.log(url); 
+    
+        var formData = new FormData(this);
+    
+        // Perform the AJAX request
+        $.ajax({
+            url: '/stream/save',  
+            method: "POST",
+            data: formData, 
+            processData: false,  
+            contentType: false,  
+            success: function(response) {
+                console.log(response); 
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+                console.log(response);
+            }
+        });
+
+    });
+    // question generate inputs
+        function generateInputs(count) {
+            let inputContainer = $("#questionInputs");
+            inputContainer.empty(); 
+            for (let i = 1; i <= count; i++) {
+                inputContainer.append(`
+                    <div class="mt-2 d-flex gap-1 align-items-center">
+                    <label for="question${i}" >${i}.</label>
+                    <input type="text" class="form-control" name="question[]" id="question${i}" placeholder="Question ${i}">
+                    </div>
+                `);
+            }
+        }
+        generateInputs(5);
+        $("#question-items").on("input", function () {
+            let selectedValue = $(this).val();
+            generateInputs(selectedValue);
+        });
+
+    
     });    
 }
