@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="container-2 mt-4 p-3">
+    
     <div>
         <h3 class="title">
             {{$questionsData->title}}
@@ -32,32 +33,24 @@
                 @endif
             </h6>
         </div>
-        @if(auth()->user()->role == 'student')
+        @if(auth()->user()->role == 'student' && $classMember)
         <div class="shadow-3 p-4 rounded">
             <p>Your Answer:</p>
-            <form action="{{route('turnIn')}}" method="POST">
+            <form action="{{ route('turnIn') }}" method="POST">
                 @csrf
                 @method('POST')
-                <input type="hidden" name="question_id" value="{{$questionsData->id}}">
-                <input type="hidden" name="class_member_id" value="{{$questionsData->user->id}}">
-                <textarea class="p-3 mt-3 text-dark" name="answer" style="border:none;background-color:#f1f1f1;outline:none;width:100%;height:150px;text-align:start;vertical-align:top;resize:none;font-size:14px"></textarea>
-                <input type="submit" class="btn btn-primary mt-3 w-100" value="Turn In">
+                <input type="hidden" name="question_id" value="{{ $questionsData->id }}">
+                <input type="hidden" name="class_member_id" value="{{ $classMember->id }}"> 
+                <textarea class="p-3 mt-3 text-dark" name="answer" style="border:none;background-color:#f1f1f1;outline:none;width:100%;height:150px;text-align:start;vertical-align:top;resize:none;font-size:14px">{{$answer ?? ''}}
+                </textarea>
+                @if($answer)
+                    <input class="btn btn-primary mt-3 w-100" value="Submited" disabled>
+                @else
+                    <input type="submit" class="btn btn-primary mt-3 w-100" value="Turn In">
+                @endif
             </form>
         </div>
         @endif
-        {{-- <div class="shadow-3 mt-3 p-4 rounded">
-            <div class="d-flex justify-content-between align-items-center p-2">
-                <input type="text" style="border:none;outline:none;width:100%;" placeholder="Class Comment">
-                <i class="fa-solid fa-paper-plane cursor-pointer"></i>
-            </div>
-           
-            <div class="line"></div>
-            <p class="text-small mt-2">Comment in the class</p>
-            <div class="relative cursor-pointer m-2">
-                <i class="fa-regular fa-comment"></i>
-                <span>1</span>
-            </div>
-        </div> --}}
     </div>
 </div>
 @endsection

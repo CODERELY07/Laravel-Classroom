@@ -1,40 +1,28 @@
 // utils.js
 export function initializeClassEllipsis() {
-    const classEllipsis = document.querySelectorAll('.class-card .class-ellipsis');
-    const toggleContents = document.querySelectorAll('.class-card .toggle-content');
-
-    function removeActiveClasses() {
-        toggleContents.forEach((content) => {
-            content.classList.remove('active');
-        });
-    }
-
-    classEllipsis.forEach((btn) => {
-        btn.addEventListener('click', function (e) {
+    $(document).ready(function () {
+        const $classEllipsis = $('.class-ellipsis');
+        const $toggleContents = $('.toggle-content');
+    
+        function removeActiveClasses() {
+            $toggleContents.removeClass('active');
+        }
+    
+        $classEllipsis.on('click', function (e) {
             e.stopPropagation();
-            console.log("hi");
-            toggleContents.forEach((content) => {
-                if (content !== btn.parentElement.querySelector('.toggle-content')) {
-                    content.classList.remove('active');
-                }
-            });
-
-            const toggleContent = btn.parentElement.querySelector('.toggle-content');
-            if (toggleContent) {
-                toggleContent.classList.toggle('active');
-            }
+            
+            $toggleContents.not($(this).siblings('.toggle-content')).removeClass('active');
+            $(this).siblings('.toggle-content').toggleClass('active');
         });
-    });
-
-    document.addEventListener('click', function () {
-        removeActiveClasses();
-    });
-
-    toggleContents.forEach((content) => {
-        content.addEventListener('click', function (e) {
+    
+        $(document).on('click', function () {
+            removeActiveClasses();
+        });
+    
+        $toggleContents.on('click', function (e) {
             e.stopPropagation();
         });
-    });
+    });    
 }
 
 export function initializeShowModal(){
@@ -96,4 +84,21 @@ function changeProfile(){
             
         }
     });
+
+    /* Toggle show and hide */
+    $(document).on('click', '[data-toggle-btn]', function (e) {
+        e.stopPropagation();
+        const content = $(this).siblings('.toggle-content');
+        $('.toggle-content').not(content).removeClass('active');
+        content.toggleClass('active');
+    });
+    
+    $(document).on('click', function () {
+        $('.toggle-content').removeClass('active');
+    });
+    
+    $('.toggle-content').on('click', function (e) {
+        e.stopPropagation();
+    });
+    /* Toggle show and hide */
 }

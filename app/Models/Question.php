@@ -10,16 +10,19 @@ class Question extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     public function class()
     {
         return $this->belongsTo(Classess::class);
     }
-    public function classMemberAnswers()
+    public function answers()
     {
-        return $this->hasMany(ClassMemberQuestionAnswers::class);
+        return $this->hasMany(ClassMemberQuestionAnswers::class, 'question_id', 'id');
     }
+
+
+    
 }
 

@@ -64,8 +64,6 @@ export function effectsFunctions(){
      
          $('.tab-button').click(function () {
              const tabId = $(this).data('tab');
-     
-             // Only handle tab switches without showing the loading indicator
              $('.tab-button').removeClass('active');
              $('.tab-content').removeClass('active').css('opacity', 0); 
              $(this).addClass('active');
@@ -238,7 +236,7 @@ export function effectsFunctions(){
                 `);
             }
         }
-        generateInputs(5);
+        generateInputs(1);
         $("#question-items").on("input", function () {
             let selectedValue = $(this).val();
             generateInputs(selectedValue);

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassMember;
+use App\Models\ClassMemberQuestionAnswers;
 use App\Models\Question;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,32 +42,24 @@ class QuestionController extends Controller
      * Display the specified resource.
      */
     public function show(string $id)
-    {
-        $questionsData = Question::with('user')->where('id', $id)->first();
-        $questions = json_decode($questionsData->question);
-        return view('user.class.question',['questionsData' => $questionsData, 'questions' => $questions]);
-    }
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+{
+    $questionsData = Question::with('user')->where('id', $id)->first();
+    
+    $questions = json_decode($questionsData->question);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+    $classMember = ClassMember::where('user_id', auth()->user()->id)
+                                        ->where('class_id', $questionsData->class_id)
+                                        ->first();
+    $answer = ClassMemberQuestionAnswers::where('class_member_id', $classMember->id)
+    ->where('question_id', $questionsData->id)
+    ->first();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+    return view('user.class.question', [
+        'questionsData' => $questionsData,
+        'questions' => $questions,
+        'classMember' => $classMember ,
+        'answer' => $answer ? $answer->answer : null,
+    ]);
+}
+
 }

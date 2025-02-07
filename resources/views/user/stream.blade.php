@@ -7,6 +7,7 @@
             <button class="tab-button active" data-tab="stream">Stream</button>
             <button class="tab-button" data-tab="classwork">Classwork</button>
             <button class="tab-button" data-tab="people">People</button>
+            <button class="tab-button" data-tab="grade">Grade</button>
         </div>
         <div class="mt-1">
             <div id="stream" class="tab-content active">
@@ -113,6 +114,28 @@
                     </x-slot>
                     <x-search-form action="/stream/search/{{$data->id}}" id="{{$data->id}}"/>
                 </x-modal>
+            </div>
+            <div id="grade" class="tab-content">
+                <ul class="list-unstyled">
+                    @if(auth()->user()->role == 'teacher')
+                        @foreach ($students as $student)
+                        <a href="{{ route('grade.show', ['classID' => $data->id, 'userID' => $student->id]) }}">
+                            <li class="d-flex border-bottom pb-2 gap-2 pt-2 align-items-center mb-2">
+                                <div class="profile-text shadow-3 text-small-initial relative cursor-pointer">
+                                    @if ($student->profile)
+                                        <img style="position:absolute;width:100%;height:100%;border-radius:inherit;object-fit:cover" src="{{ asset('images/' . $student->profile) }}" alt="Profile Picture"/>
+                                    @else
+                                        {{ strtoupper(substr($student->name, 0, 1)) }}  
+                                    @endif
+                                </div>
+                                <p class="p-0 m-0">{{ $student->name }}</p>
+                            </li>
+                        </a>
+                        @endforeach
+                    @else
+                        <x-show-grade :userID="$student->id" :classID="$data->id" />
+                    @endif
+                </ul>
             </div>
         </div>
     </div>

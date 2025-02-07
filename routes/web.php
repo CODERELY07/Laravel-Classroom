@@ -3,6 +3,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ClassMemberQuestionAnswersController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\GradeController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\StreamController;
 use App\Http\Controllers\UserController;
@@ -52,10 +53,16 @@ Route::middleware('auth')->group(function(){
         Route::post('/stream/save', 'store')->name('stream.store');
     });
 
-    // Question Controller
     Route::resource('question', QuestionController::class);
+    Route::post('/grade/update', [GradeController::class, 'update'])->name('grade.update');
+    Route::get('/grade/{classID}/user/{userID}', [GradeController::class, 'show'])->name('grade.show');
 
+
+
+ 
     
+
+
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/class/{className}', function(){
         return view('user.class');

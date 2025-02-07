@@ -11,36 +11,13 @@
                 </ul>
             </div>
         </div>
-        <main >
+        <main>
             <div id="viewAll" class="remove-toggle">
-                <div class="border-bottom d-flex  mt-3 justify-content-between align-items-center pb-1">
-                    <h2 class="text-start">Questions</h2> 
-                </div>
-                <div>
-                    @foreach ($questions as $question)
-                    <div class="material mt-2 gap-2 pb-2 d-flex align-items-center border-bottom " style="width:100%;">
-                        <a href="{{route('question.show', [$question->id])}}" class="material mt-2 gap-2 pb-2 d-flex align-items-center " style="width:100%;">
-                            <div class="profile-text text-small-initial">
-                                <i class="fa-solid fa-question"></i>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center" style="width:100%;">
-                                <h6 class="material-title p-0 m-0">{{$question->title}}</h6>
-                                <small>{{$question->due_date}}</small>
-                            </div>
-                        </a>
-                        <div class="relative cursor-pointer">
-                            <div class="cursor-pointer px-1 pe-2 class-ellipsis">
-                                <i class="fa-solid fa-ellipsis-vertical"></i>                    
-                            </div>
-                            <div class="toggle-content z-index-1 class-options shadow-1">
-                                <ul class="list-unstyled z-index-1">
-                                    hi
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
+                @if(!$questions->isEmpty())
+                <x-questions :classID="$classID" />
+                @else
+                    <p class="text-center mt-5">This class is empty</p>
+                @endif
             </div>
             <div id="creatematerial" class="d-none remove-toggle">
             </div>
@@ -70,7 +47,7 @@
                     </div>
                     <div style="width:100%;max-width:500px;">
                         <p>Select the number of items:</p>
-                        <input type="number" id="question-items" class="form-control" placeholder="5">
+                        <input type="number" id="question-items" class="form-control" placeholder="1" value="1">
                         <label class="mt-2"  for="question" >Questions: </label><br>
                         <div style="overflow-y:auto;height:300px">
                             <div id="questionInputs">
@@ -84,5 +61,11 @@
                 </form>
             </div>
         </main>
+    @else
+        @if(!$questions->isEmpty()) 
+            <x-questions :classID="$classID" />
+        @else
+            <p class="text-center mt-5">This class is empty</p>
         @endif
+    @endif
 </div>
