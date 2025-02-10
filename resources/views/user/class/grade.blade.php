@@ -8,9 +8,8 @@
         <ul class="list-unstyled">
             @foreach ($questions as $question)
                 @php
-                    // Decode the JSON array of question text
                     $questionArray = json_decode($question->question, true);
-                    $answer = $question->answers->first();  // Retrieve the first answer for the student
+                    $answer = $question->answers->first(); 
                 @endphp
                 <li class="d-flex border-bottom pb-2 gap-5 pt-2 align-items-center mb-2 flex-column flex-md-row">
                     <div class="w-100">

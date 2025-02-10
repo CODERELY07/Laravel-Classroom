@@ -32,23 +32,57 @@
                     </div>
                 </div>        
                 <div class="materials-section">
-                    {{-- <a href="{{route('user.material', ['material'])}}" class="material-item mt-3 p-3 gap-3 d-flex align-items-center">
-                        <div class="profile-text text-small-initial">
-                            <i class="fa-solid fa-book-open"></i>
-                        </div>
-                        <div>
-                            <h6 class="material-title p-0 m-0">Title</h6>
-                            <p class="p-0 text-start m-0">
-                                This is the content content
-                            </p>
-                        </div>
-                    </a> --}}
+                    @php
+                    foreach ($classworks as $classwork) {
+                        $questions = $classwork->questions;
+                        $materials = $classwork->materials;
+                    
+                        if ($questions && $materials) {
+                            $combined = array_merge($questions->toArray(), $materials->toArray());
+                    
+                            // Sort the combined array by created_at
+                            usort($combined, function ($a, $b) {
+                                return strtotime($a['created_at']) - strtotime($b['created_at']);
+                            });
+                            
+                            foreach ($combined as $item) {
+                                // Check if it's a question or material and set the appropriate icon
+                                $icon = '';
+                                if (isset($item['question'])) {  // Assuming 'question_id' exists for questions
+                                    $icon = '<i class="fa-solid fa-question"></i>';
+                                    $url = route('question.show', [$item['id']]);
+                                } else {
+                                    $icon = '<i class="fa-solid fa-book"></i>';
+                                    $url = route('material.show', [$item['id']]);
+                                }
+                                
+                                echo '<a href= ' . $url . ' class="material-item mt-3 p-3 gap-3 d-flex align-items-center"> 
+                                        <div class="profile-text text-small-initial">
+                                            ' . $icon . '
+                                        </div>
+                                        <div>
+                                            <h6 class="material-title p-0 m-0">' . $item['title'] . '</h6>
+                                            <p class="p-0 text-start m-0">
+                                                ' . $item['description'] . '
+                                            </p> 
+                                        </div>
+                                      </a>';
+                            }
+                        } else {
+                            echo "No questions or materials found.";
+                        }
+                    }
+                @endphp
+                
+                    
+               
+                    
                 </div>
             </div>
             {{-- Classwork --}}
             <x-class-work :classID="$data->id" classID="{{$data->id}}"/>
-    
             {{-- Classwork --}}
+            
             <div id="people" class="tab-content">
                 <div class="border-bottom d-flex justify-content-between align-items-center pb-3">
                     <h2 class="text-start">Teachers</h2>

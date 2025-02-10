@@ -13,6 +13,7 @@ export function authFunctions() {
         handleRequest('changeName', 'Changing Please Wait...', 1000, false);
         handleRequest('changePassword', 'Changing Please Wait...', 1000, false);
         handleRequest('createquestionForm', 'Creating Please Wait...', 2000, false);
+        handleRequest('createMaterialForm', 'Creating Please Wait...', 2000, false);
 
         // Fetch classes once for both teacher and archive
         fetchAllClasses();

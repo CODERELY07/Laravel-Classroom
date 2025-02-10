@@ -2,6 +2,7 @@
 
 namespace App\View\Components;
 
+use App\Models\Material;
 use App\Models\Question;
 use Closure;
 use Illuminate\View\Component;
@@ -21,6 +22,7 @@ class ClassWork extends Component
     public function render(): View|Closure|string
     {
         $questions = Question::where('class_id', $this->classID)->get();
-        return view('components.class-work', ['questions' => $questions]);
+        $materials = Material::where('class_id', $this->classID)->get();
+        return view('components.class-work', ['questions' => $questions, 'materials' => $materials]);
     }
 }

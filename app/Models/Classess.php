@@ -24,7 +24,13 @@ public function students() {
                 ->withPivot('role')
                 ->where('class_members.role', 'Student'); 
 }
+public function questions()
+    {
+        return $this->hasMany(Question::class, 'class_id');
+    }
 
-
-
+    public function materials()
+    {
+        return $this->hasMany(Material::class, 'class_id');
+    }
 }

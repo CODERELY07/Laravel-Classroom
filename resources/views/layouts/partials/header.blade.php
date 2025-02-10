@@ -106,13 +106,13 @@
                 <x-profile-initial  id="profile-class-btn" class="profile-text cursor-pointer relative"/>
                 <div class="toggle-content profile-content align-items-center shadow-1 py-3 px-5">
                     <div class="d-flex align-items-center flex-column">
-                        <p class="text-center text-dark mb-4">calipjo.markely@gmail.com</p>
+                        <p class="text-center text-dark mb-4">{{$authUser->email}}</p>
                         <x-profile-initial id="profile-class-btn" class="profile-text shadow-3 text-big-initial relative cursor-pointer">
                             <div class="pen shadow-3 cursor-pointer show-modal" data-toggle="modal" data-target="#profileModal">
                                 <i class="fa-solid fa-pen"></i>
                             </div>
                         </x-profile-initial>
-                        <h5 class="mt-3">Hi, Mark Ely!</h5>
+                        <h5 class="mt-3">Hi, {{$authUser->name}}!</h5>
                         <div class="d-flex mt-3 gap-3">
                             {{-- <a href="{{route('account')}}">
                                 <button class="btn pb-2 border text-center form-control">Account</button>

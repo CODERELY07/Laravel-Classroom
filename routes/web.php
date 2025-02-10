@@ -4,6 +4,7 @@ use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ClassMemberQuestionAnswersController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GradeController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\StreamController;
 use App\Http\Controllers\UserController;
@@ -53,15 +54,16 @@ Route::middleware('auth')->group(function(){
         Route::post('/stream/save', 'store')->name('stream.store');
     });
 
+    //Materials
+    Route::post('/material/store', [MaterialController::class, 'store'])->name('material.store');
+    Route::get('/material/{id}', [MaterialController::class, 'show'])->name('material.show');
+    Route::get('storage/materials/{file}', [MaterialController::class, 'showMaterialFile']);
+    //questions
     Route::resource('question', QuestionController::class);
+    //Grade
     Route::post('/grade/update', [GradeController::class, 'update'])->name('grade.update');
-    Route::get('/grade/{classID}/user/{userID}', [GradeController::class, 'show'])->name('grade.show');
-
-
-
- 
-    
-
+    Route::get('/grade/{classID}/user/{userID}', [GradeController::class, 'show'])->name('grade.show'); 
+     
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/class/{className}', function(){

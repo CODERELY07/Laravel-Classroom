@@ -11,10 +11,6 @@ use Illuminate\Http\Request;
 
 class QuestionController extends Controller
 {
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request):JsonResponse
     {
         $request->validate([
@@ -35,7 +31,6 @@ class QuestionController extends Controller
             'class_id' => $request->class_id
         ]);
         return response()->json(['redirectUrl' => route('stream', [$request->class_id]) , 'success' => 'Question Created Successfully']); 
-
     }
 
     /**
@@ -61,5 +56,4 @@ class QuestionController extends Controller
         'answer' => $answer ? $answer->answer : null,
     ]);
 }
-
 }

@@ -19,8 +19,19 @@ class StreamController extends Controller
         if(empty($class)){
             return view('user.index');
         }
-        return view('user.stream', ['data' => $class, 'teachers' => $teachers , 'students' => $students]);
+       
+        $classworks = Classess::with([
+            'questions' => function ($query) {
+                $query->orderBy('created_at', 'asc');
+            },
+            'materials' => function ($query) {
+                $query->orderBy('created_at', 'asc');
+            }
+        ])->where('id', $id)->get();
+        
+        return view('user.stream', ['data' => $class, 'teachers' => $teachers , 'students' => $students, 'classworks' => $classworks ]);
     }
+
     public function unenrollStudents(Request $request, $class_id):JsonResponse
     {
         $class = Classess::findOrFail($class_id);
