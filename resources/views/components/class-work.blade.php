@@ -16,7 +16,6 @@
                 @if(!$questions->isEmpty() || !$materials->isEmpty())
                 <x-questions :classID="$classID" />
                 <x-materials :classID="$classID" />
-                
                 @else
                     <p class="text-center mt-5">This class is empty</p>
                 @endif

@@ -46,9 +46,8 @@
                             });
                             
                             foreach ($combined as $item) {
-                                // Check if it's a question or material and set the appropriate icon
                                 $icon = '';
-                                if (isset($item['question'])) {  // Assuming 'question_id' exists for questions
+                                if (isset($item['question'])) { 
                                     $icon = '<i class="fa-solid fa-question"></i>';
                                     $url = route('question.show', [$item['id']]);
                                 } else {
