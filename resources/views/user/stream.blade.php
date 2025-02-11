@@ -168,13 +168,13 @@
                     @endif
                 </ul>
             </div>
-            <div id="chats" class="card tab-content mx-auto" style="height:500px;width:100%;max-width:800px;position: relative;">
+            <div id="chats" class="card tab-content mx-auto" style="height:520px;width:100%;max-width:800px;position: relative;">
                 <div>
                     <div>
                         <h2><b>{{$data->classname}}</b></h2>
                     </div>
-                    <div class="card-body" id="messages" style="height:100%;overflow: auto">
-                       
+                    <div class="card-body" id="messages" style="height:400px;overflow: auto">
+                       {{-- fetch chats --}}
                       
                     </div>
                     
@@ -189,12 +189,14 @@
             @section('script')
 
             <script>
-                function sendMsg(){
+            
+                    function sendMsg(){
                    const sender = "{{auth()->user()->name}}";
                    const userID = "{{auth()->user()->id}}";
                    const classID = "{{$data->id}}";
                    const csrfToken = "{{csrf_token()}}";
                    const message = messageInput.value;
+              
                    if(message){
                     $.ajax({
                        url: "{{route('send.message')}}",
@@ -207,8 +209,12 @@
                            _token: csrfToken
                        },
                        success: function(response){
-                           $('#messages').append(` <div>
-                               <strong>You:</strong>
+                        const senderName = response.sender;
+                        console.log(senderName + "{{auth()->user()->name}}" )
+                        const alignment = senderName === "{{auth()->user()->name}}" ? "right" : "left";
+                     
+                           $('#messages').append(` 
+                           <div class="message ${alignment}">
                                <p>${response.message}</p>
                            </div>`)
                            messageInput.value = '';
@@ -220,7 +226,7 @@
                    }
                }
        
-               window.onload = () => {
+                    window.onload = () => {
                 //    console.log("Test");
 
                    const classID = "{{$data->id}}"; 
@@ -231,14 +237,37 @@
                     type: 'GET',
                     success: function(response) {
                         const chats = response.chats;
-                        chats.forEach(function(message) {
+                        chats.forEach(function(data) {
+                            const alignment = data.user.name === "{{auth()->user()->name}}" ? "right" : "left";
+                            const name = data.user.name === "{{auth()->user()->name}}" ? "" : data.user.name;
+                                
+                            let profileContent = '';
+                            if (data.user.name !== "{{auth()->user()->name}}") {
+                                if (data.user.profile && data.user.profile.trim() !== '') {
+                                    profileContent = `<img style="width:30px;height:30px;border-radius:50%;object-fit:cover" src="{{ asset('images/') }}/${data.user.profile}" alt="Profile Picture" />`;
+                                } else {
+                                    profileContent = `<span style="width:30px;height:30px;display:flex;justify-content:center;align-items:center;border-radius:50%;background-color:#ccc; color:white; font-size:18px;">${data.user.name.charAt(0).toUpperCase()}</span>`;
+                                }
+                            
+                            }
+
                             $('#messages').append(`
-                                <div>
-                                    <strong>${message.user.name}:</strong>
-                                    <p>${message.message}</p>
-                                                </div>
-                                            `);
-                                        });
+                                <div class="message-container ${alignment}" style="position:relative; display:flex;align-items:flex-end; gap:5px;">
+                                    <div class="align-self:flex-end">
+                                        ${profileContent}
+                                    </div>
+                                    
+                                    <div style="flex-grow:1;">
+                                        <small style="font-size:10px">${name}</small>
+                                        <div class="message ${alignment}">
+                                            <p>${data.message}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+
+
+                            });
                         },
                         error: function(response) {
                             console.log(response.errors);
@@ -247,17 +276,36 @@
 
                    window.Echo.channel('user-message')
                        .listen('MessageSent', function(data) { 
+                        let profileContent = '';
                           if(data.sender != "{{auth()->user()->name}}"){
-                           $("#messages").append(`
-                                 <div><strong>${data.sender}:</strong>
-                                  <p> ${data.message}</p>
-                                  </div>
-                           `)
+                            if (data.profile['profile'] && data.profile['profile'].trim() !== '') {
+                                profileContent = `<img style="width:30px;height:30px;border-radius:50%;object-fit:cover" src="{{ asset('images/') }}/${data.profile['profile']}" alt="Profile Picture" />`;
+                            } else {
+                                profileContent = `<span style="width:30px;height:30px;display:flex;justify-content:center;align-items:center;border-radius:50%;background-color:#ccc; color:white; font-size:18px;">${data.profile['name'].charAt(0).toUpperCase()}</span>`;
+                            }
+                   
+                            console.log()
+                            const alignment = data.sender !== "{{auth()->user()->name}}" ? "left" : "right";
+                         
+                            $("#messages").append(`
+                                 <div class="message-container ${alignment}" style="position:relative; display:flex;align-items:flex-end; gap:5px;">
+                                    <div class="align-self:flex-end">
+                                        ${profileContent}
+                                    </div>
+                                    
+                                    <div style="flex-grow:1;">
+                                        <small style="font-size:10px">${data.sender}</small>
+                                        <div class="message ${alignment}">
+                                            <p>${data.message}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
                           }
                        });
        
                 //    console.log("Test channel...");
-               };
+                };
        
            </script>
 
@@ -265,3 +313,33 @@
         </div>
     </div>
 @endsection
+<style>
+    .message {
+        padding: 8px;
+        border-radius: 5px;
+        width: max-content;
+        max-width: 400px;
+    }
+
+    .right {
+        align-self: flex-end;
+        margin-left: auto;
+    }
+    .message.right{
+        background-color: #007bff;
+        color: white;
+    }
+    .left {
+        align-self: flex-start;
+    }
+    .message.left{
+        background-color: #f1f1f1;
+        color: black;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+</style>

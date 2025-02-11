@@ -68,36 +68,6 @@
                             </ul>
                         </div>
                     </div>
-                    {{-- <div class="relative">
-                        <div class="cursor-pointer add-btn relative" id="bell-btn">
-                            <i class="fa-solid fa-bell" style="font-size: 24px; color: #333;"></i>
-                            <span class="text-white" style="position: absolute; top: 8px; right: 5px; background-color: #ff0000;font-size:10px;border-radius: 50%; width:15px;height:15px; font-weight: bold; display: flex; justify-content: center; align-items: center;">2</span>
-                        </div>
-                        <div class="toggle-content shadow-1 z-index-99">
-                            <ul class="list-unstyled">
-                                <a href="#" class="hover-bg">
-                                    <li type="button" class="cursor-pointer">
-                                        <div class="d-flex justify-content-between">
-                                            <p class="text-start">Activity 1</p>
-                                            <p class="text-start text-small">Dec 12, 2024</p>
-                                        </div>
-                                        <p class="text-start">You have new activity from Ms.Riben in Class BSIT</p>
-                                    </li>
-                                    <div class="line"></div>
-                                </a>
-                                <a href="#" class="hover-bg">
-                                    <li type="button" class="cursor-pointer">
-                                        <div class="d-flex justify-content-between">
-                                            <p class="text-start">Activity 1</p>
-                                            <p class="text-start text-small">Dec 12, 2024</p>
-                                        </div>
-                                        <p class="text-start">You have new activity from Ms.Riben in Class BSIT</p>
-                                    </li>
-                                    <div class="line"></div>
-                                </a>
-                            </ul>
-                        </div>
-                    </div> --}}
                 </div>
             </div>
             @endif

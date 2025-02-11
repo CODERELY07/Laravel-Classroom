@@ -18,20 +18,23 @@ class ChatAppController extends Controller
             'message' => 'required|string'
         ]);
     
-        MessageSent::dispatch($validateData['sender'], $validateData['message']);
+       
     
         $chatMessage = ClassroomChat::create($validateData);
     
   
-        $chats = ClassroomChat::where('class_id', $validateData['class_id'])
-                ->orderBy('created_at', 'asc')
-                ->get();
-    
+        $chats = ClassroomChat::with('user')->where('class_id', $request->class_id)
+        ->orderBy('created_at', 'asc')
+        ->get();
+        $user =  ClassroomChat::with('user')->where('class_id', $request->class_id)->where('user_id', $request->user_id)->first();
+        MessageSent::dispatch($validateData['sender'], $validateData['message'],
+        $user->user);
+
         return response()->json([
             'message' => $chatMessage->message,
-            'sender' => $chatMessage->sender,
-            'user_id' => $chatMessage->user_id,
-            'class_id' => $chatMessage->class_id,
+            'sender' => $request->sender,
+            'user_id' => $request->user_id,
+            'class_id' => $request->class_id,
             'chats' => $chats 
         ]);
     }

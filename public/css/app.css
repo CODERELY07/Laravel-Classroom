@@ -302,17 +302,17 @@ header {
     position: relative;
     overflow-y: auto;
 }
-.dropdown-class-parent::-webkit-scrollbar {
+*::-webkit-scrollbar {
     width: 2px; 
 }
-.dropdown-class-parent::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
     background-color: var(--soft-white);
 }
-.dropdown-class-parent::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     background-color: var(--dividing-border); 
     border-radius: 10px; 
 }
-.dropdown-class-parent::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
     background-color: var(--text-color);
 }
 /* Class card */
@@ -451,6 +451,13 @@ header {
 .class-banner-card .card-body p {
     font-size: 24px;
 }
+
+/* chats */
+.sender{
+    font-size: 30px;
+}
+
+
 
 /* .profile-content{
     background-color: #edf3ff;
