@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatAppController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ClassMemberQuestionAnswersController;
 use App\Http\Controllers\ForgotPasswordController;
@@ -74,6 +75,10 @@ Route::middleware('auth')->group(function(){
     })->name('account');
 
     Route::post('/question/turnin', ClassMemberQuestionAnswersController::class)->name('turnIn');
+
+    // Chats
+    Route::post('/fire/message', [ChatAppController::class, 'fireMessage'])->name('send.message');
+    Route::get('/chat/{classID}', [ChatAppController::class, 'getChat'])->name('chats');
 });
 
 // not logged in

@@ -14,17 +14,20 @@ class Classess extends Model
         'class_code'
     ];
 
-public function teachers() {
-    return $this->belongsToMany(User::class, 'class_members', 'class_id', 'user_id')
-                ->withPivot('role')
-                ->where('class_members.role', 'Teacher'); 
-}
-public function students() {
-    return $this->belongsToMany(User::class, 'class_members', 'class_id', 'user_id')
-                ->withPivot('role')
-                ->where('class_members.role', 'Student'); 
-}
-public function questions()
+    public function message(){
+        return $this->hasMany(ClassroomChat::class, 'class_id', 'id');
+    }
+    public function teachers() {
+        return $this->belongsToMany(User::class, 'class_members', 'class_id', 'user_id')
+                    ->withPivot('role')
+                    ->where('class_members.role', 'Teacher'); 
+    }
+    public function students() {
+        return $this->belongsToMany(User::class, 'class_members', 'class_id', 'user_id')
+                    ->withPivot('role')
+                    ->where('class_members.role', 'Student'); 
+    }
+    public function questions()
     {
         return $this->hasMany(Question::class, 'class_id');
     }

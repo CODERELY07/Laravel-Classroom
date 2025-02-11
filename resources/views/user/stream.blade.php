@@ -1,13 +1,15 @@
+@vite('resources/js/app.js')
 @extends('layouts.app')
 
 @section('title', "$data->classname")
 @section('content')
     <div class="sub-container">
-        <div class="tabs mt-4">
+        <div class="tabs mt-4 d-flex flex-wrap gap-3">
             <button class="tab-button active" data-tab="stream">Stream</button>
             <button class="tab-button" data-tab="classwork">Classwork</button>
             <button class="tab-button" data-tab="people">People</button>
             <button class="tab-button" data-tab="grade">Grade</button>
+            <button class="tab-button" data-tab="chats">Chats</button>
         </div>
         <div class="mt-1">
             <div id="stream" class="tab-content active">
@@ -39,8 +41,7 @@
                     
                         if ($questions && $materials) {
                             $combined = array_merge($questions->toArray(), $materials->toArray());
-                    
-                            // Sort the combined array by created_at
+                            //sort array by created_at
                             usort($combined, function ($a, $b) {
                                 return strtotime($a['created_at']) - strtotime($b['created_at']);
                             });
@@ -72,10 +73,7 @@
                         }
                     }
                 @endphp
-                
-                    
-               
-                    
+
                 </div>
             </div>
             {{-- Classwork --}}
@@ -170,6 +168,100 @@
                     @endif
                 </ul>
             </div>
+            <div id="chats" class="card tab-content mx-auto" style="height:500px;width:100%;max-width:800px;position: relative;">
+                <div>
+                    <div>
+                        <h2><b>{{$data->classname}}</b></h2>
+                    </div>
+                    <div class="card-body" id="messages" style="height:100%;overflow: auto">
+                       
+                      
+                    </div>
+                    
+                </div>
+                <div class="d-flex gap-2 align-items-center" style="position: absolute;bottom:20px;width:95%">
+                    <input type="text" class="form-control" placeholder="Type your message here..." id="messageInput">
+                    <div>
+                        <button class="btn btn-primary" type="button" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            @section('script')
+
+            <script>
+                function sendMsg(){
+                   const sender = "{{auth()->user()->name}}";
+                   const userID = "{{auth()->user()->id}}";
+                   const classID = "{{$data->id}}";
+                   const csrfToken = "{{csrf_token()}}";
+                   const message = messageInput.value;
+                   if(message){
+                    $.ajax({
+                       url: "{{route('send.message')}}",
+                       type: 'POST',
+                       data: {
+                           sender: sender,
+                           message: message,
+                           user_id: userID,
+                           class_id: classID,
+                           _token: csrfToken
+                       },
+                       success: function(response){
+                           $('#messages').append(` <div>
+                               <strong>You:</strong>
+                               <p>${response.message}</p>
+                           </div>`)
+                           messageInput.value = '';
+                       },
+                       error: function(response){
+                            console.log(response.errors);
+                       }
+                    })
+                   }
+               }
+       
+               window.onload = () => {
+                //    console.log("Test");
+
+                   const classID = "{{$data->id}}"; 
+                   const csrfToken = "{{csrf_token()}}";
+
+                   $.ajax({
+                    url: `{{route('chats', ['classID' => $data->id])}}`, 
+                    type: 'GET',
+                    success: function(response) {
+                        const chats = response.chats;
+                        chats.forEach(function(message) {
+                            $('#messages').append(`
+                                <div>
+                                    <strong>${message.user.name}:</strong>
+                                    <p>${message.message}</p>
+                                                </div>
+                                            `);
+                                        });
+                        },
+                        error: function(response) {
+                            console.log(response.errors);
+                        }
+                    });
+
+                   window.Echo.channel('user-message')
+                       .listen('MessageSent', function(data) { 
+                          if(data.sender != "{{auth()->user()->name}}"){
+                           $("#messages").append(`
+                                 <div><strong>${data.sender}:</strong>
+                                  <p> ${data.message}</p>
+                                  </div>
+                           `)
+                          }
+                       });
+       
+                //    console.log("Test channel...");
+               };
+       
+           </script>
+
+           @endsection
         </div>
     </div>
 @endsection
