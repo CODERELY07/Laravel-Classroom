@@ -47,7 +47,7 @@ export function authFunctions() {
                     data: formData,
                     contentType: false,
                     processData: false,
-                    beforeSend: function () {
+                    beforeSend: function archiveParent() {
                         if (isDisable) {
                             button.prop('disabled', true).text(beforeText);
                         }
@@ -97,7 +97,7 @@ export function authFunctions() {
             });
         }
 
-        // Fetch classes for both teacher and archive in a single function
+        // Fetch classes for both teacher and archive
         function fetchAllClasses() {
             const requests = [
                 { url: teacherClassesUrl, elementID: 'classessParent' },

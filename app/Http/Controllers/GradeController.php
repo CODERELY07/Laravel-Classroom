@@ -14,7 +14,7 @@ class GradeController extends Controller
     {
         
         $classMembers = ClassMember::where('user_id', $userID)->first();
-       
+      
         $questions = Question::where('class_id', $classID)
         ->with(['answers' => function($query) use ($classMembers) {
             $query->where('class_member_id', $classMembers->id);

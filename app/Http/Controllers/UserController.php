@@ -40,7 +40,7 @@ class UserController extends Controller
 
     public function changeNamePost(Request $request, string $id):JsonResponse{
         $request->validate([
-            'name' => 'required|string'
+            'name' => 'required|string|unique:users,name'
         ]);
         $user = User::findOrFail($id);
         $user->name = $request->name;

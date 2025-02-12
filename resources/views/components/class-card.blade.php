@@ -19,7 +19,6 @@
                     @else
                         <span>{{$firstLetter}}</span>
                     @endif
-                    
                 </div>
             </div>
         @endif

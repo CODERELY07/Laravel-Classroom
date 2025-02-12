@@ -13,6 +13,14 @@ class StreamController extends Controller
 {
     public function show(string $id){
         $classess = Classess::findOrFail($id);
+
+        $user = auth()->user();
+        $isTeacher = $classess->teachers()->where('user_id', $user->id)->exists();
+        $isStudent = $classess->students()->where('user_id', $user->id)->exists();
+
+        if(!$isTeacher && !$isStudent){
+            return redirect()->route('user.index');
+        }
         $teachers = $classess->teachers()->get();
         $students = $classess->students()->get();
         $class = DB::table('classess')->where('id', $id)->first();

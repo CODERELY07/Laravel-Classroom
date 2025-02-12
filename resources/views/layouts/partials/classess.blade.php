@@ -11,16 +11,16 @@
             <li type="button" class="cursor-pointer show-modal text-dark edit-class" data-toggle="modal" data-target="#editClassModal"  data-id="{{$class->class_id}}"  data-classname={{$class->classname}} data-section={{$class->section}} data-subject={{$class->subject}}>Edit class</li>
             <li type="button" class="cursor-pointer show-modal text-dark archive-class" data-toggle="modal" data-target="#archiveClassModal" data-id="{{$class->class_id}}">Archive class</li>
         @else
-            <li type="button" class="cursor-pointer show-modal text-dark unenroll-class" data-id="{{$class->id}}" data-toggle="modal" data-target="#unenrollClassModal">Unenroll class</li>
+            <li type="button" class="cursor-pointer show-modal text-dark unenroll-class" data-id="{{$class->class_id}}" data-toggle="modal" data-target="#unenrollClassModal">Unenroll class</li>
         @endif
     </x-class-card>
     @elseif ($class->status == 'archive')
     <x-class-card  classID="{{$class->class_id}}" classname="{{$class->classname}}" section="{{$class->section}}" userID="{{$class->user_id}}" teacherName="{{$class->name}}" teacherProfile="{{$class->profile}}" firstLetter="{{$class->first_letter}}" >
         @if (auth()->user()->role === 'teacher')
-            <li type="button" class="cursor-pointer show-modal text-dark unarchive-class" data-toggle="modal" data-target="#unarchiveClassModal" data-id="{{$class->id}}">Unarchive class</li>
-            <li type="button" class="cursor-pointer show-modal text-dark delete-class" data-toggle="modal" data-target="#deleteClassModal"  data-id="{{$class->id}}"  data-classname={{$class->classname}} data-section={{$class->section}} data-subject={{$class->subject}}>Delete class</li>
+            <li type="button" class="cursor-pointer show-modal text-dark unarchive-class" data-toggle="modal" data-target="#unarchiveClassModal" data-id="{{$class->class_id}}">Unarchive class</li>
+            <li type="button" class="cursor-pointer show-modal text-dark delete-class" data-toggle="modal" data-target="#deleteClassModal"  data-id="{{$class->class_id}}"  data-classname={{$class->classname}} data-section={{$class->section}} data-subject={{$class->subject}}>Delete class</li>
         @else
-            <li type="button" class="cursor-pointer show-modal text-dark unenroll-class" data-id="{{$class->id}}" data-toggle="modal" data-target="#unenrollClassModal">Unenroll class</li>
+            <li type="button" class="cursor-pointer show-modal text-dark unenroll-class" data-id="{{$class->class_id}}" data-toggle="modal" data-target="#unenrollClassModal">Unenroll class</li>
         @endif
     </x-class-card>
     @endif

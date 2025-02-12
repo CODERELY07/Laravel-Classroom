@@ -84,9 +84,6 @@
                         </x-profile-initial>
                         <h5 class="mt-3">Hi, {{$authUser->name}}!</h5>
                         <div class="d-flex mt-3 gap-3">
-                            {{-- <a href="{{route('account')}}">
-                                <button class="btn pb-2 border text-center form-control">Account</button>
-                            </a> --}}
                             <a href="{{route('logout')}}">
                                 <button class="btn pb-2 border text-center form-control">Logout</button>
                             </a>

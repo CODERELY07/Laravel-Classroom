@@ -5,6 +5,7 @@
         <span>Enrolled</span>
     </span>
     @foreach ($classess as $class)
+    @if($class->status == 'ok')
     <a href="{{route('stream', [$class->classID])}}">
         <li class="d-flex mt-2 align-items-center">
             <div class="profile-text text-small-initial">
@@ -16,7 +17,7 @@
             </div>
         </li>
     </a>
-    
+    @endif
     @endforeach
    
    

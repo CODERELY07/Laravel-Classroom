@@ -105,10 +105,7 @@ class ClassController extends Controller
              'classess' => $classess
          ]);
      }
-     
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(Request $request, string $id): JsonResponse
     {
         $teacher_id = auth()->user()->id;
@@ -187,14 +184,19 @@ class ClassController extends Controller
         DB::table('class_members')->where('class_id', $id)->where('user_id', $student_id)->delete();
         return response()->json(['success' => 'You are successfully unernolled in this class!']);
     }
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function showArchiveClass():JsonResponse{
         $joinClassess = DB::table('class_members')
         ->where('user_id', auth()->user()->id)
         ->pluck('class_id');
-        $classess = Classess::whereIn('id', $joinClassess)->where('status','archive')->get(); 
+    
+        $classess = DB::table('classess')
+        ->join('users', 'classess.teacher_id', '=', 'users.id') 
+        ->whereIn('classess.id', $joinClassess)  
+        ->where('classess.status', 'archive') 
+        ->select('classess.*', 'users.*',  DB::raw('SUBSTRING(users.name, 1, 1) as first_letter'), DB::raw('users.id as user_id'), DB::raw('classess.id as class_id'))  
+        ->get();
+
         return response()->json([
         'html' => view('layouts.partials.classess', ['classess' => $classess])->render(),
         'classess' => $classess

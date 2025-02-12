@@ -90,8 +90,9 @@
     @else
     @if(!$questions->isEmpty() || !$materials->isEmpty())
     <x-questions :classID="$classID" />
-    @else
-        <p class="text-center mt-5">This class is empty</p>
+    @endif
+    @if($questions->isEmpty())
+        <p class="text-center mt-5">Please ask your teacher in the chat room for the classwork</p>
     @endif
     @endif
 </div>

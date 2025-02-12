@@ -38,7 +38,7 @@ class AuthController extends Controller
     }
     public function signupPost(Request $request):JsonResponse{
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|unique:users,name',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'role' => 'required|string|in:Teacher,Student',

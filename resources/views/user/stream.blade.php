@@ -179,10 +179,10 @@
                     </div>
                     
                 </div>
-                <div class="d-flex gap-2 align-items-center" style="position: absolute;bottom:20px;width:95%">
-                    <input type="text" class="form-control" placeholder="Type your message here..." id="messageInput">
-                    <div>
-                        <button class="btn btn-primary" type="button" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+                <div class="d-flex gap-2 align-items-center mx-auto justify-content-center" style="position: relative;bottom:0px;width:85%">
+                    <input type="text" style="width: 90%" class="form-control" placeholder="Type your message here..." id="messageInput">
+                    <div style="width: 10%" >
+                        <button  class="btn btn-primary" type="button" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
                     </div>
                 </div>
             </div>
@@ -190,7 +190,7 @@
 
             <script>
             
-                    function sendMsg(){
+                function sendMsg(){
                    const sender = "{{auth()->user()->name}}";
                    const userID = "{{auth()->user()->id}}";
                    const classID = "{{$data->id}}";
@@ -210,7 +210,6 @@
                        },
                        success: function(response){
                         const senderName = response.sender;
-                        console.log(senderName + "{{auth()->user()->name}}" )
                         const alignment = senderName === "{{auth()->user()->name}}" ? "right" : "left";
                      
                            $('#messages').append(` 
@@ -235,8 +234,18 @@
                    $.ajax({
                     url: `{{route('chats', ['classID' => $data->id])}}`, 
                     type: 'GET',
+                    beforeSend: function(){
+                        $('#messages').html(`<p id="loadingFlag" style="text-align:center;margin-top:250px;color:#727D73">loading...</p>`)                       
+                    },
                     success: function(response) {
                         const chats = response.chats;
+                        $('#messages p#loadingFlag').text('');
+                        if (response.chats.length === 0 || response.chats.every(chat => !chat.message)) {
+                            $('#messages').html(`<p id="chatFlag" style="text-align:center;">There are no chats at the moment. You have the opportunity to start one.</p>`);
+                        } else {
+                            $('#messages p#chatFlag').text('');
+                        }
+
                         chats.forEach(function(data) {
                             const alignment = data.user.name === "{{auth()->user()->name}}" ? "right" : "left";
                             const name = data.user.name === "{{auth()->user()->name}}" ? "" : data.user.name;
@@ -248,9 +257,7 @@
                                 } else {
                                     profileContent = `<span style="width:30px;height:30px;display:flex;justify-content:center;align-items:center;border-radius:50%;background-color:#ccc; color:white; font-size:18px;">${data.user.name.charAt(0).toUpperCase()}</span>`;
                                 }
-                            
                             }
-
                             $('#messages').append(`
                                 <div class="message-container ${alignment}" style="position:relative; display:flex;align-items:flex-end; gap:5px;">
                                     <div class="align-self:flex-end">
@@ -273,18 +280,18 @@
                             console.log(response.errors);
                         }
                     });
-
+                  
                    window.Echo.channel('user-message')
                        .listen('MessageSent', function(data) { 
                         let profileContent = '';
+                        $('#messages p#chatFlag').text('');
+                      
                           if(data.sender != "{{auth()->user()->name}}"){
                             if (data.profile['profile'] && data.profile['profile'].trim() !== '') {
                                 profileContent = `<img style="width:30px;height:30px;border-radius:50%;object-fit:cover" src="{{ asset('images/') }}/${data.profile['profile']}" alt="Profile Picture" />`;
                             } else {
                                 profileContent = `<span style="width:30px;height:30px;display:flex;justify-content:center;align-items:center;border-radius:50%;background-color:#ccc; color:white; font-size:18px;">${data.profile['name'].charAt(0).toUpperCase()}</span>`;
                             }
-                   
-                            console.log()
                             const alignment = data.sender !== "{{auth()->user()->name}}" ? "left" : "right";
                          
                             $("#messages").append(`
@@ -314,6 +321,7 @@
     </div>
 @endsection
 <style>
+    
     .message {
         padding: 8px;
         border-radius: 5px;
