@@ -2,85 +2,89 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Classess;
-use App\Models\User;
-use DB;
-use Hash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
+
 class UserController extends Controller
 {
-    public function index(){
-        $joinClassess = DB::table('class_members')
-        ->where('user_id', auth()->user()->id)
-        ->pluck('class_id');
-        $classess = Classess::whereIn('id', $joinClassess)->where('status','ok')->get(); 
-        return view('user.index', ['classess' => $classess]);
-    }
-    public function archive(){
-        $joinClassess = DB::table('class_members')
-        ->where('user_id', auth()->user()->id)
-        ->pluck('class_id');
-        $classess = Classess::whereIn('id', $joinClassess)->where('status','archive')->get(); 
-        return view('user.archiveclass', ['classess' => $classess]);
+    private const AVATAR_DIR = 'images';
+
+    public function index(Request $request)
+    {
+        return $this->classList($request, Classess::STATUS_ACTIVE, 'user.index');
     }
 
-    public function setting(){
-        $userID = auth()->user()->id;
-        $user = User::where('id' , $userID)->first();
-        return view('user.setting.setting', ['user' => $user]);
+    public function archive(Request $request)
+    {
+        return $this->classList($request, Classess::STATUS_ARCHIVED, 'user.archiveclass');
     }
 
-    public function changeName(){
-        $userID = auth()->user()->id;
-        $user = User::where( 'id' , $userID)->first();
-        return view('user.setting.namesetting', ['user' => $user]);
+    public function setting(Request $request)
+    {
+        return view('user.setting.setting', ['user' => $request->user()]);
     }
 
-    public function changeNamePost(Request $request, string $id):JsonResponse{
+    public function changeNamePost(Request $request): JsonResponse
+    {
+        $data = $request->validate(['name' => 'required|string|max:100']);
+
+        $request->user()->update(['name' => trim($data['name'])]);
+
+        return $this->success('Your name was updated.', redirectUrl: route('user.setting'));
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
         $request->validate([
-            'name' => 'required|string|unique:users,name'
-        ]);
-        $user = User::findOrFail($id);
-        $user->name = $request->name;
-        $user->save();
-        return response()->json(['success' => 'Name Updated Successfully!','redirectUrl' => route('user.setting')]);
+            'current_password' => 'required|current_password',
+            'newPass' => ['required', 'string', 'confirmed', 'different:current_password', Password::min(8)],
+        ], [
+            'current_password.current_password' => 'Your current password is not correct.',
+            'newPass.different' => 'Choose a password that is different from your current one.',
+        ], ['newPass' => 'new password']);
+
+        $request->user()->update(['password' => $request->newPass]);
+
+        return $this->success('Password changed.', redirectUrl: route('user.setting'));
     }
 
-    public function accountSetting(){
-        $userID = auth()->user()->id;
-        $user = User::where( 'id' , $userID)->first();
-        return view('user.setting.accountsetting', ['user' => $user]);
-    }
-    public function changePassword(Request $request, string $id):JsonResponse{
+    public function changeProfile(Request $request): JsonResponse
+    {
+        // SVG is intentionally not accepted: it can carry scripts.
         $request->validate([
-            'newPass' => 'required|min:6|string|confirmed'
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        User::where('id', $id)->update(['password' => Hash::make($request->newPass)]);
+        $user = $request->user();
+        $image = $request->file('profile_picture');
+        $directory = public_path(self::AVATAR_DIR);
+        $filename = Str::uuid().'.'.$image->extension();
 
-        return response()->json(['success' => 'Password Changed Successfully!','redirectUrl' => route('user.setting')]);
-    }
-    public function changeProfile(Request $request):JsonResponse{
-        $request->validate([
-            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-        ]);
-        $user_id = auth()->user()->id;
-        $currentUser = DB::table('users')->where('id', $user_id)->first();
+        File::ensureDirectoryExists($directory);
+        $image->move($directory, $filename);
 
-        if ($image = $request->file('profile_picture')) {
-            $destinationPath = public_path('images/');
-            $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
-            if(!empty($currentUser->profile)){
-                $oldImage = $destinationPath . $currentUser->profile;
-                if($oldImage){
-                    unlink($oldImage);
-                }
-            }
-            $image->move($destinationPath, $profileImage);
+        // basename() keeps a tampered value from pointing outside the folder.
+        if ($user->profile) {
+            File::delete($directory.DIRECTORY_SEPARATOR.basename($user->profile));
         }
-        DB::table('users')->where('id', $user_id)->update(['profile' => $profileImage]);
-        return response()->json(['success' => 'Profile Change Successfully!', 'redirectUrl' => route('user.index')]);
+
+        $user->update(['profile' => $filename]);
+
+        return $this->success('Profile picture updated.', redirectUrl: url()->previous(route('user.index')));
+    }
+
+    private function classList(Request $request, string $status, string $view)
+    {
+        $classess = Classess::forMember($request->user())
+                            ->where('status', $status)
+                            ->with('owner')
+                            ->latest()
+                            ->get();
+
+        return view($view, ['classess' => $classess]);
     }
 }

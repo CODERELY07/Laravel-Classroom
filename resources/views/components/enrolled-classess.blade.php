@@ -1,24 +1,16 @@
-<ul class="list-unstyled pt-0 dropdown-class-parent">
-    <span class="px-3 pb-1 d-block cursor-pointer" id="dropdown-class">
-        <i class="fa-solid fa-caret-right"></i> 
-        <i class="fa-solid fa-graduation-cap"></i>
-        <span>Enrolled</span>
-    </span>
-    @foreach ($classess as $class)
-    @if($class->status == 'ok')
-    <a href="{{route('stream', [$class->classID])}}">
-        <li class="d-flex mt-2 align-items-center">
-            <div class="profile-text text-small-initial">
-                {{$classInitial}}
-            </div>
-            <div class="d-flex flex-column justify-content-center">
-                <span class="m-0 p-0 semi-bold">{{$class->classname}}</span>
-                <span class="m-0 p-0 text-start text-small">{{$class->section}}</span>
-            </div>
-        </li>
-    </a>
-    @endif
-    @endforeach
-   
-   
-</ul>
+<nav class="nav-group" aria-labelledby="enrolled-heading">
+    <div class="nav-heading" id="enrolled-heading">Your classes</div>
+
+    @forelse ($classess as $class)
+        @php $isCurrent = (int) request()->route('class')?->id === $class->id; @endphp
+        <a href="{{ route('stream', $class->id) }}" @class(['nav-link-item', 'active' => $isCurrent]) @if ($isCurrent) aria-current="page" @endif>
+            <span class="avatar avatar-xs theme-{{ $class->themeIndex() }}" style="background: var(--banner); color: #fff" aria-hidden="true">{{ Str::upper(Str::substr($class->classname, 0, 1)) }}</span>
+            <span class="nav-text">
+                {{ $class->classname }}
+                <small>{{ $class->section }}</small>
+            </span>
+        </a>
+    @empty
+        <p class="px-3 small text-muted-2 mb-0">Classes you create or join will show up here.</p>
+    @endforelse
+</nav>

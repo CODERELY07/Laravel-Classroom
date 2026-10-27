@@ -1,99 +1,46 @@
- {{-- Create Class Modal --}}
- <x-modal  id="createClassModal">
-    <x-slot name="heading">
-       Create Class
-    </x-slot>
-    <div class="msg alert" style="display: none">
+{{-- Modals used on the class list pages. --}}
+@if (auth()->user()->isTeacher())
+    <x-modal id="createClassModal" title="Create a class">
+        <form action="{{ route('createClass.post') }}" data-ajax-form novalidate>
+            <div class="modal-body">
+                <div class="form-alert"></div>
+                <x-field name="classname" label="Class name" placeholder="e.g. Grade 10 Biology" maxlength="100" required />
+                <x-field name="section" label="Section" placeholder="e.g. Section B · Mornings" maxlength="100" required />
+                <x-field name="subject" label="Subject" placeholder="e.g. Science" maxlength="100" required />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-quiet" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create class</button>
+            </div>
+        </form>
+    </x-modal>
 
-    </div>
-    <form id="createClass" action="{{ route('createClass.post') }}" method="POST">
-        @csrf
-        <div class="mt-3">
-            <label for="classname">Class Name:</label>
-            <input type="text" name="classname" id="classname" class="form-control mt-2">
+    <x-modal id="editClassModal" title="Edit class details">
+        <form action="" data-ajax-form data-on-success="classes-changed" novalidate>
+            <div class="modal-body">
+                <div class="form-alert"></div>
+                <x-field name="classname" label="Class name" maxlength="100" required />
+                <x-field name="section" label="Section" maxlength="100" required />
+                <x-field name="subject" label="Subject" maxlength="100" required />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-quiet" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+            </div>
+        </form>
+    </x-modal>
+@endif
+
+<x-modal id="joinClassModal" title="Join a class">
+    <form action="{{ route('join.post') }}" data-ajax-form novalidate>
+        <div class="modal-body">
+            <div class="form-alert"></div>
+            <p class="text-muted-2">Ask your teacher for the class code, then enter it here.</p>
+            <x-field name="classcode" label="Class code" placeholder="e.g. a1b2c3d" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="20" required />
         </div>
-        <div class="mt-3">
-            <label for="section">Section:</label>
-            <input type="text" name="section" id="section" class="form-control mt-2">
-        </div>
-        <div class="mt-3">
-            <label for="subject">Subject:</label>
-            <input type="text" name="subject" id="subject" class="form-control mt-2">
-        </div>
-        <div class="mt-3 float-end">
-            <input type="submit" value="Create" class="btn btn-primary">
+        <div class="modal-footer">
+            <button type="button" class="btn btn-quiet" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Join</button>
         </div>
     </form>
 </x-modal>
-{{-- Create Class Modal --}}
-
-{{-- Join Class Modal --}}
-<x-modal id="joinClassModal">
-    <x-slot name="heading">
-       Join Class
-    </x-slot>
-    <p>
-        <strong>Class code</strong><br>
-        Ask your teacher for the class code, then enter it here.</p>
-    <div class="msg alert" style="display: none">
-
-    </div>
-    <form id="joinClassForm" action="{{route('join.post')}}">
-        @csrf
-        <div class="mt-3">
-            <label for="classcode">Enter Class Code:</label>
-            <input type="text" name="classcode" id="classcode" class="form-control mt-2">
-        </div>
-        <div class="mt-3 float-end">
-            <input type="submit" value="Join" class="btn btn-primary">
-        </div>
-    </form>
-</x-modal>
-{{-- Join Class Modal --}}
-
-{{-- Edit Class --}}
-<x-modal  id="editClassModal">
-    <x-slot name="heading">
-       Edit Class
-    </x-slot>
-    <div class="msg alert" style="display: none">
-
-    </div>
-    <form id="editClassForm" method="POST">
-        @csrf
-        <div class="mt-3">
-            <label for="classname">Class Name:</label>
-            <input type="text" name="classname" id="editClassname" class="form-control mt-2">
-        </div>
-        <div class="mt-3">
-            <label for="section">Section:</label>
-            <input type="text" name="section" id="editSection" class="form-control mt-2">
-        </div>
-        <div class="mt-3">
-            <label for="subject">Subject:</label>
-            <input type="text" name="subject" id="editSubject" class="form-control mt-2">
-        </div>
-        <div class="mt-3 float-end">
-            <input type="submit" value="Update" id="edit-class-btn" class="btn btn-primary">
-        </div>
-    </form>
-</x-modal>
-{{-- Edit Class --}}
-
-{{-- Archive Class Modal --}}
-<x-modal2 id="archiveClassModal">
-    <span>Are you sure you want to archive this class?</span>
-</x-modal2>
-{{-- Archive Class Modal --}}
-
-{{-- Unenroll Class Modal --}}
-<x-modal2 id="unenrollClassModal">
-    <span>Are you sure you want to unenroll this class?</span>
-</x-modal2>
-<x-modal2 id="unarchiveClassModal">
-    <span>Are you sure you want to unarchive this class?</span>
-</x-modal2>
-<x-modal2 id="deleteClassModal">
-    <span>Are you sure you want to delete this class?</span>
-</x-modal2>
-{{-- Archive Class Modal --}}

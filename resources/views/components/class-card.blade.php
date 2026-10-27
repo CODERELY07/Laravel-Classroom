@@ -1,39 +1,85 @@
-<div class="class-card  relative shadow-3">
-    <div class="class-banner d-flex p-3 border justify-content-between">
-        <div>
-            <a href="{{route('stream', [$classID])}}">
-                <span class="cursor-pointer text-medium d-block">{{$classname}}</span>
-                <span class="cursor-pointer text-small d-block">{{$section}}</span>
-            </a>
-            @if (auth()->user()->id != $userID)
-                <div class="mt-1">
-                    <p>{{$teacherName}}</p>
-                </div>
-            @endif
-        </div>
-        @if (auth()->user()->id != $userID)
-            <div class="class-user-profile">
-                <div id="profile" class="profile-text shadow-3 text-big-initial relative cursor-pointer">
-                    @if ($teacherProfile )
-                        <img style="position:absolute;width:100%;height:100%;border-radius:inherit;object-fit:cover" src="{{ asset('images/' . $teacherProfile) }}" alt="Profile Picture"/>
+@props(['class', 'archived' => false])
+@php
+    $owner = $class->owner;
+    $isOwner = (int) $class->teacher_id === (int) auth()->id();
+@endphp
+<article class="class-card">
+    <div class="class-banner theme-{{ $class->themeIndex() }}">
+        <a href="{{ route('stream', $class->id) }}" class="class-name">{{ $class->classname }}</a>
+        <div class="class-section">{{ $class->section }}</div>
+        @unless ($isOwner)
+            <div class="class-teacher">{{ $owner?->name }}</div>
+        @endunless
+
+        <div class="dropdown class-menu">
+            <button type="button" class="icon-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Options for {{ $class->classname }}">
+                <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+                @if ($isOwner)
+                    @unless ($archived)
+                        <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editClassModal"
+                                data-action="{{ route('updateClass.post', $class->id) }}"
+                                data-classname="{{ $class->classname }}"
+                                data-section="{{ $class->section }}"
+                                data-subject="{{ $class->subject }}">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit details
+                        </button>
+                        <button type="button" class="dropdown-item" data-copy="{{ $class->class_code }}">
+                            <i class="fa-regular fa-copy" aria-hidden="true"></i> Copy class code
+                        </button>
+                        <button type="button" class="dropdown-item"
+                                data-confirm-url="{{ route('archiveClass.post', $class->id) }}"
+                                data-confirm-title="Archive {{ $class->classname }}?"
+                                data-confirm-body="Archived classes are hidden from everyone's home page. You can restore it any time."
+                                data-confirm-label="Archive">
+                            <i class="fa-solid fa-box-archive" aria-hidden="true"></i> Archive
+                        </button>
                     @else
-                        <span>{{$firstLetter}}</span>
-                    @endif
-                </div>
-            </div>
-        @endif
-        <div class="relative cursor-pointer">
-            <div class="cursor-pointer px-1 pe-2 class-ellipsis">
-                <i class="fa-solid fa-ellipsis-vertical"></i>                    
-            </div>
-            <div class="toggle-content z-index-1 class-options shadow-1">
-                <ul class="list-unstyled z-index-1">
-                    {{$slot}}
-                </ul>
+                        <button type="button" class="dropdown-item"
+                                data-confirm-url="{{ route('unarchiveClass.post', $class->id) }}"
+                                data-confirm-title="Restore {{ $class->classname }}?"
+                                data-confirm-body="The class will appear on everyone's home page again."
+                                data-confirm-label="Restore">
+                            <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Restore
+                        </button>
+                        <button type="button" class="dropdown-item text-danger"
+                                data-confirm-url="{{ route('destroyClass.post', $class->id) }}"
+                                data-confirm-title="Delete {{ $class->classname }} for good?"
+                                data-confirm-body="All posts, submissions, grades and chat history in this class will be permanently removed."
+                                data-confirm-label="Delete class"
+                                data-confirm-danger>
+                            <i class="fa-regular fa-trash-can" aria-hidden="true"></i> Delete
+                        </button>
+                    @endunless
+                @else
+                    <button type="button" class="dropdown-item text-danger"
+                            data-confirm-url="{{ route('unenrollClass.post', $class->id) }}"
+                            data-confirm-title="Leave {{ $class->classname }}?"
+                            data-confirm-body="You'll lose access to its classwork and chat. You can rejoin later with the class code."
+                            data-confirm-label="Leave class"
+                            data-confirm-danger>
+                        <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Leave class
+                    </button>
+                @endif
             </div>
         </div>
+
+        @unless ($isOwner)
+            <x-avatar :user="$owner" size="lg" class="avatar-ring class-owner-avatar" />
+        @endunless
     </div>
+
+    <div class="class-body">
+        <span class="subject"><i class="fa-solid fa-bookmark" aria-hidden="true"></i> {{ $class->subject }}</span>
+    </div>
+
     <div class="class-footer">
-        <span><i class="fa-solid fa-clipboard-user text-dark cursor-pointer"></i></span> 
+        <a href="{{ route('stream', $class->id) }}#classwork" class="icon-btn" aria-label="Classwork for {{ $class->classname }}" title="Classwork">
+            <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
+        </a>
+        <a href="{{ route('stream', $class->id) }}#chats" class="icon-btn" aria-label="Chat for {{ $class->classname }}" title="Chat">
+            <i class="fa-regular fa-comments" aria-hidden="true"></i>
+        </a>
     </div>
-</div>
+</article>

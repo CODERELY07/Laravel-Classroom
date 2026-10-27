@@ -2,36 +2,31 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\ClassroomChat;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class MessageSent implements ShouldBroadcast
+/**
+ * Broadcast immediately (no queue worker needed) on the class's private
+ * channel, so only members of that class receive the message.
+ */
+class MessageSent implements ShouldBroadcastNow
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, InteractsWithSockets;
 
-    /**
-     * Create a new event instance.
-     */
-    public function __construct(public $sender,
-    public $message, public $profile)
+    public function __construct(public ClassroomChat $chat)
     {
-        
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn(): array
     {
-        return [
-            new Channel('user-message'),
-        ];
+        return [new PrivateChannel('classroom.'.$this->chat->class_id)];
+    }
+
+    public function broadcastWith(): array
+    {
+        return $this->chat->toChatPayload();
     }
 }

@@ -1,56 +1,101 @@
 @extends('layouts.app')
-
-@section('title', 'Question')
+@section('title', $question->title)
+@section('crumb', $class->classname)
 
 @section('content')
-<div class="container-2 mt-4 p-3">
-    
-    <div>
-        <h3 class="title">
-            {{$questionsData->title}}
-        </h3>
-        <p class="author-date">
-            {{$questionsData->user->name}} • <span class="fw-bold">Dec 12, 2025</span>
-        </p>
-        <div class="d-flex justify-content-between">
-            {{-- <p class="grade">47/50</p> --}}
-            <p class="text-muted text-start">Due Date: <span class="fw-bold"> {{$questionsData->due_date}}</span></p>
+<div class="page">
+    <a href="{{ route('stream', $class->id) }}#classwork" class="btn btn-ghost btn-sm mb-3">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to {{ $class->classname }}
+    </a>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <article class="panel">
+                <div class="panel-body">
+                    <header class="article-header">
+                        <span class="feed-icon" style="background: var(--clay-soft); color: var(--clay)" aria-hidden="true">
+                            <i class="fa-solid fa-clipboard-question"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <h1 class="article-title">{{ $question->title }}</h1>
+                            <div class="article-meta">
+                                <span>{{ $question->user->name }}</span>
+                                <span>Posted {{ $question->created_at->format('M j, Y') }}</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <hr class="my-4">
+
+                    <p class="prose">{{ $question->description }}</p>
+
+                    @if ($items = $question->items())
+                        <h2 class="h6 mt-4 mb-2">Questions</h2>
+                        <ol class="question-list">
+                            @foreach ($items as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach
+                        </ol>
+                    @endif
+                </div>
+            </article>
         </div>
-    </div>
-    <div class="line mt-2"></div>
-    <div class="mt-3">
-        <h6>
-            {{$questionsData->description}}
-        </h6>
-        <div>
-            <h6>
-                @if($questions && count($questions) > 0)
-                <ol style="line-height: 30px"> 
-                    @foreach($questions as $index => $question)
-                        <li>{{ $question }}</li>
-                    @endforeach
-                </ol>
-                @endif
-            </h6>
-        </div>
-        @if(auth()->user()->role == 'student' && $classMember)
-        <div class="shadow-3 p-4 rounded">
-            <p>Your Answer:</p>
-            <form action="{{ route('turnIn') }}" method="POST">
-                @csrf
-                @method('POST')
-                <input type="hidden" name="question_id" value="{{ $questionsData->id }}">
-                <input type="hidden" name="class_member_id" value="{{ $classMember->id }}"> 
-                <textarea class="p-3 mt-3 text-dark" name="answer" style="border:none;background-color:#f1f1f1;outline:none;width:100%;height:150px;text-align:start;vertical-align:top;resize:none;font-size:14px">{{$answer ?? ''}}
-                </textarea>
-                @if($answer)
-                    <input class="btn btn-primary mt-3 w-100" value="Submited" disabled>
+
+        <aside class="col-lg-4">
+            <div class="sticky-aside d-flex flex-column gap-3">
+                <div class="panel">
+                    <div class="panel-body py-2">
+                        <div class="stat"><span>Due</span><strong @class(['text-danger' => $question->isPastDue()])>{{ $question->due_date?->format('D, M j, Y') }}</strong></div>
+                        <div class="stat"><span>Points</span><strong>{{ $question->points }}</strong></div>
+                        @if ($canTeach)
+                            <div class="stat"><span>Turned in</span><strong>{{ $submissionCount }} / {{ $studentCount }}</strong></div>
+                        @elseif ($answer?->isGraded())
+                            <div class="stat"><span>Your grade</span><strong class="text-success">{{ $answer->grade }} / {{ $question->points }}</strong></div>
+                        @endif
+                    </div>
+                </div>
+
+                @if ($canTeach)
+                    <a href="{{ route('stream', $class->id) }}#grade" class="btn btn-primary">
+                        <i class="fa-solid fa-square-poll-vertical" aria-hidden="true"></i> Grade submissions
+                    </a>
                 @else
-                    <input type="submit" class="btn btn-primary mt-3 w-100" value="Turn In">
+                    <form class="panel" action="{{ route('turnIn') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="question_id" value="{{ $question->id }}">
+                        <div class="panel-header">
+                            <h2 class="panel-title">Your work</h2>
+                            @if ($answer?->isGraded())
+                                <span class="pill pill-accent">Graded</span>
+                            @elseif ($answer)
+                                <span class="pill pill-clay">Turned in</span>
+                            @elseif ($question->isPastDue())
+                                <span class="pill pill-danger">Missing</span>
+                            @else
+                                <span class="pill">Assigned</span>
+                            @endif
+                        </div>
+                        <div class="panel-body">
+                            @if ($answer?->isGraded())
+                                <div class="answer-box">{{ $answer->answer }}</div>
+                            @else
+                                <label for="answer" class="visually-hidden">Your answer</label>
+                                <textarea id="answer" name="answer" rows="8" maxlength="20000"
+                                          @class(['form-control', 'is-invalid' => $errors->has('answer')])
+                                          placeholder="Write your answers here. Number them to match the questions." required>{{ old('answer', $answer?->answer) }}</textarea>
+                                @error('answer')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <button type="submit" class="btn btn-primary w-100 mt-3">
+                                    {{ $answer ? 'Update answer' : 'Turn in' }}
+                                </button>
+                                @if ($answer)
+                                    <p class="form-text text-center mb-0 mt-2">Turned in {{ $answer->updated_at->diffForHumans() }}. You can edit until it’s graded.</p>
+                                @endif
+                            @endif
+                        </div>
+                    </form>
                 @endif
-            </form>
-        </div>
-        @endif
+            </div>
+        </aside>
     </div>
 </div>
 @endsection

@@ -1,75 +1,28 @@
-@extends('layouts.clean', [
-    'cssBody' => 'signin-body'
-])
-@section('title', 'Signin')
+@extends('layouts.auth')
+@section('title', 'Sign in')
 
-@section('childContent')
-<div class="container">
-    <a href="{{ route("home") }}" class="logo text-decoration-none text-dark text-center mb-3">
-        <h1>
-            ME Classroom
-        </h1>
-    </a>
-    <div class="box-style">
-        <div id="responseMessage" class="alert text-center text-dark" role="alert" style="display: none;"></div>
-            <h2>Sign In Now</h2>
-            <p>Enter your credentials to access your account</p>
-            <div class="msg alert" style="display: none">
+@section('content')
+    <h1>Welcome back</h1>
+    <p class="auth-sub">Sign in to get to your classes.</p>
 
+    <form action="{{ route('login.post') }}" data-ajax-form novalidate>
+        <div class="form-alert"></div>
+        <x-field name="email" label="Email" type="email" placeholder="you@school.edu" autocomplete="email" required />
+
+        <x-password-field name="password" label="Password" required />
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="remember_me" id="remember_me" value="1">
+                <label class="form-check-label" for="remember_me">Keep me signed in</label>
             </div>
-            <form id="signinForm" action={{route('login.post')}} class="form">
-                @csrf
-                <div class="mb-3">
-                    <label class="text-start form-label" for="email">Email address</label>
-                    <input class="form-control" name="email" id="email" type="email" placeholder="example@gmail.com"/>
-                </div>
-                <div class="mb-3 d-flex justify-content-between align-items-center">
-                    <label class="form-label" style="margin-bottom:-20px" for="password">Password</label>
-                    <a class="text-decoration-none" href="{{ route('forget.password.get')}}" >Forgot password?</a>
-                </div>
-                <div class="mb-3">
-                    <input class="form-control" name="password" id="password" placeholder="Your Password" type="password"/>
-                </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" name="remember_me" id="remember_me" type="checkbox" />
-                    <label class="form-check-label" for="remember_me">
-                        Remember Me
-                    </label>
-                </div>
-                <div class="d-grid">
-                    <button class="btn btn-primary" type="submit">Sign In</button>
-                </div>
-            </form>
-            <p class="text-center text-auth-footer mt-3">
-                Don't have an account yet? <a href="{{ route('signup') }}">Sign up</a>
-            </p>
+            <a href="{{ route('forget.password.get') }}" class="small">Forgot password?</a>
         </div>
-        <!-- Reset Password Modal -->
-        <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="resetPasswordModalLabel">Reset Your Password</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Stage 2: Verification Code -->
-                <div id="codeStage" style="display: none;">
-                <form id="codeForm">
-                <p>Check Your email for your 6- digit code.</p>
-                    <div class="mb-3">
-                    <label for="resetCode" class="form-label">Enter the 6-digit code</label>
-                    <input type="text" class="form-control" id="resetCode" name="resetCode" placeholder="6-digit code" maxlength="6" required>
-                    </div>
-                    <div class="mb-3">
-                    <button type="submit" id="verify-button" class="btn btn-primary w-100">Verify Code</button>
-                    </div>
-                </form>
-                <div id="codeResponseMessage" class="alert alert-info text-center" style="display:none;"></div>
-                </div>
-            </div>
-            </div>
-        </div>
-    </div>
-</div>
+
+        <button class="btn btn-primary btn-lg w-100" type="submit">Sign in</button>
+    </form>
+@endsection
+
+@section('footer')
+    New here? <a href="{{ route('signup') }}">Create an account</a>
 @endsection

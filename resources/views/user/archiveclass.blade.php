@@ -1,13 +1,18 @@
 @extends('layouts.app')
-@section('title', 'Archive')
+@section('title', 'Archived classes')
+@section('crumb', 'Archived')
 
 @section('content')
-    <div class="main-alert-msg mx-5 my-2 alert" style="display:none;width:100%;max-width:500px;">
+    <div class="page">
+        <header class="page-header">
+            <div>
+                <h1 class="page-title">Archived classes</h1>
+                <p class="page-subtitle">Finished classes wait here, out of everyone's way, until you restore or delete them.</p>
+            </div>
+        </header>
+
+        <div id="classGrid" data-source="{{ route('archive.show') }}">
+            @include('layouts.partials.classess', ['classess' => $classess, 'archived' => true])
+        </div>
     </div>
-    <div id="archiveParent"> 
-        
-    </div>
-    {{-- Home Modals --}}
-    @extends('layouts.partials.homeModal')
-    {{-- Home Modals --}}
-@endsection 
+@endsection

@@ -2,218 +2,146 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\ClassMember;
 use App\Models\Classess;
-use Auth;
-use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Log;
-use Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class ClassController extends Controller
 {
+    private const RULES = [
+        'classname' => 'required|string|max:100',
+        'section' => 'required|string|max:100',
+        'subject' => 'required|string|max:100',
+    ];
 
-     public function create(Request $request): JsonResponse
-     {
-         if (auth()->user()->role !== 'teacher') {
-             return response()->json(['error' => 'You do not have permission to create a class.'], 403);
-         }
-     
-         $request->validate([
-             'classname' => 'required|string',
-             'section' => 'required|string',
-             'subject' => 'required|string',
-         ]);
-     
-         $classCode = Str::random(8);
-     
-         $classId = DB::table('classess')->insertGetId([
-             'classname' => $request->classname,
-             'section' => $request->section,
-             'subject' => $request->subject,
-             'class_code' => $classCode,
-             'status' => 'ok',
-             'teacher_id' => auth()->user()->id,
-             'created_at' => now(),
-             'updated_at' => now(),
-         ]);
-     
+    private const ATTRIBUTES = ['classname' => 'class name', 'classcode' => 'class code'];
 
-         DB::table('class_members')->insert([
-             'class_id' => $classId,
-             'user_id' => auth()->user()->id,
-             'role' => 'teacher',
-             'joined_at' => now(),
-         ]);
-     
-         return response()->json([
-             'success' => "Class  $request->classnamecreated successfully.",
-         ]);
-     }
-     
-     public function join(Request $request):JsonResponse
-     {
-         
-         $request->validate([
-             'classcode' => 'required|string',
-         ]);
-     
-         $class_code = $request->classcode;
-         
-         $class = Classess::where('class_code', $class_code)->first();   
-         if (!$class) {
-             return response()->json(['error' => 'Class not found']);
-         }
-     
-
-         $alreadyJoined = DB::table('class_members')
-             ->where('class_id', $class->id)
-             ->where('user_id', auth()->user()->id)
-             ->exists();
-     
-         if ($alreadyJoined) {
-            return response()->json(['error' => 'You are already a member of this class.']);
-        }
-     
-         DB::table('class_members')->insert([
-             'class_id' => $class->id,
-             'user_id' => auth()->user()->id,
-             'role' => auth()->user()->role,
-             'joined_at' => now(),
-         ]);
-     
-
-         return response()->json(['success' => 'Successfully joined the class!', 'redirectUrl' => route('user.index')]);
-     }
-
-     public function show(): JsonResponse
-     {
-         $joinClassess = DB::table('class_members')
-                           ->where('user_id', auth()->user()->id)
-                           ->pluck('class_id');
-         
-         $classess = DB::table('classess')
-                       ->join('users', 'classess.teacher_id', '=', 'users.id') 
-                       ->whereIn('classess.id', $joinClassess)  
-                       ->where('classess.status', 'ok') 
-                       ->select('classess.*', 'users.*',  DB::raw('SUBSTRING(users.name, 1, 1) as first_letter'), DB::raw('users.id as user_id'), DB::raw('classess.id as class_id'))  
-                       ->get();
-
-         return response()->json([
-             'html' => view('layouts.partials.classess', ['classess' => $classess])->render(),
-             'classess' => $classess
-         ]);
-     }
-
-    public function update(Request $request, string $id): JsonResponse
+    public function create(Request $request): JsonResponse
     {
-        $teacher_id = auth()->user()->id;
-        $isExist = DB::table('classess')
-        ->where('id', $id)
-        ->where('teacher_id', $teacher_id)
-        ->exists();
+        Gate::authorize('create', Classess::class);
 
-        if(!$isExist){
-            return response()->json(['error' => 'You dont have the permission to update this class!']);
+        $data = $request->validate(self::RULES, [], self::ATTRIBUTES);
+        $user = $request->user();
+
+        $class = DB::transaction(function () use ($data, $user) {
+            $class = Classess::create($data + [
+                'class_code' => Classess::generateCode(),
+                'status' => Classess::STATUS_ACTIVE,
+                'teacher_id' => $user->id,
+            ]);
+
+            $class->members()->create([
+                'user_id' => $user->id,
+                'role' => ClassMember::ROLE_TEACHER,
+                'joined_at' => now(),
+            ]);
+
+            return $class;
+        });
+
+        return $this->success("“{$class->classname}” is ready. Share the code {$class->class_code} with your students.", redirectUrl: route('stream', $class->id));
+    }
+
+    public function join(Request $request): JsonResponse
+    {
+        $request->validate(['classcode' => 'required|string|max:20'], [], self::ATTRIBUTES);
+
+        $user = $request->user();
+        $class = Classess::where('class_code', trim($request->classcode))->first();
+
+        if (! $class || $class->isArchived()) {
+            return $this->error('No active class uses that code. Double-check it with your teacher.', 404);
         }
-    
-        $class = Classess::where('id', $id)
-                        ->where('teacher_id', auth()->user()->id)
-                        ->first();
-    
-        if (!$class) {
-            return response()->json(['error' => 'Class not found or you do not have permission to update this class.'], 404);
+
+        if ($class->members()->where('user_id', $user->id)->exists()) {
+            return $this->error('You are already a member of this class.');
         }
-    
-        $request->validate([
-            'classname' => 'required|string',
-            'section' => 'required|string',
-            'subject' => 'required|string',
+
+        $class->members()->create([
+            'user_id' => $user->id,
+            'role' => ClassMember::roleFor($user),
+            'joined_at' => now(),
         ]);
-    
 
-        $class->update($request->all());
-    
-        return response()->json(['success' => 'Class updated successfully.']);
+        return $this->success("You joined {$class->classname}.", redirectUrl: route('stream', $class->id));
     }
 
-    public function archive(string $id):JsonResponse{
-        $teacher_id = auth()->user()->id;
-        $isExist = DB::table('classess')
-        ->where('id', $id)
-        ->where('teacher_id', $teacher_id)
-        ->exists();
-
-        if(!$isExist){
-            return response()->json(['error' => 'You dont have the permission to archive this class!']);
-        }
-        DB::table('classess')
-        ->where('id', $id)
-        ->where('teacher_id', $teacher_id)
-        ->update(['status' => 'archive']);
-        return response()->json(['success' => 'Classess Archive Successfully']);
-    }
-    public function unarchive(string $id):JsonResponse{
-        $teacher_id = auth()->user()->id;
-        $isExist = DB::table('classess')
-        ->where('id', $id)
-        ->where('teacher_id', $teacher_id)
-        ->exists();
-
-        if(!$isExist){
-            return response()->json(['error' => 'You dont have the permission to unarchive this class!']);
-        }
-        DB::table('classess')
-        ->where('id', $id)
-        ->where('teacher_id', $teacher_id)
-        ->update(['status' => 'ok']);
-        return response()->json(['success' => 'Classess unarchive Successfully']);
+    /** Re-rendered class grid, used to refresh the dashboard after changes. */
+    public function show(Request $request): JsonResponse
+    {
+        return $this->grid($request, Classess::STATUS_ACTIVE);
     }
 
-    public function unenrollClass(string $id):JsonResponse{
-        $student_id = auth()->user()->id;
-        $isExistClass = DB::table('classess')->where('id', $id)->exists();
-        if(!$isExistClass){
-            return response()->json(['error' => 'You are not enrolled in this class']);
-        }
-        $isEnrolled = DB::table('class_members')->where('class_id', $id)->where('user_id', $student_id)->exists();
-        if(!$isEnrolled){
-            return response()->json(['error' => 'You are not enrolled in this class!']);
-        }
-        DB::table('class_members')->where('class_id', $id)->where('user_id', $student_id)->delete();
-        return response()->json(['success' => 'You are successfully unernolled in this class!']);
+    public function showArchiveClass(Request $request): JsonResponse
+    {
+        return $this->grid($request, Classess::STATUS_ARCHIVED);
     }
 
-    public function showArchiveClass():JsonResponse{
-        $joinClassess = DB::table('class_members')
-        ->where('user_id', auth()->user()->id)
-        ->pluck('class_id');
-    
-        $classess = DB::table('classess')
-        ->join('users', 'classess.teacher_id', '=', 'users.id') 
-        ->whereIn('classess.id', $joinClassess)  
-        ->where('classess.status', 'archive') 
-        ->select('classess.*', 'users.*',  DB::raw('SUBSTRING(users.name, 1, 1) as first_letter'), DB::raw('users.id as user_id'), DB::raw('classess.id as class_id'))  
-        ->get();
+    public function update(Request $request, Classess $class): JsonResponse
+    {
+        Gate::authorize('manage', $class);
+
+        $class->update($request->validate(self::RULES, [], self::ATTRIBUTES));
+
+        return $this->success('Class details saved.');
+    }
+
+    public function archive(Classess $class): JsonResponse
+    {
+        Gate::authorize('manage', $class);
+
+        $class->update(['status' => Classess::STATUS_ARCHIVED]);
+
+        return $this->success("{$class->classname} moved to the archive.");
+    }
+
+    public function unarchive(Classess $class): JsonResponse
+    {
+        Gate::authorize('manage', $class);
+
+        $class->update(['status' => Classess::STATUS_ACTIVE]);
+
+        return $this->success("{$class->classname} restored.");
+    }
+
+    public function unenrollClass(Request $request, Classess $class): JsonResponse
+    {
+        Gate::authorize('view', $class);
+
+        if (Gate::allows('manage', $class)) {
+            return $this->error('You own this class. Archive or delete it instead of leaving.', 403);
+        }
+
+        $class->members()->where('user_id', $request->user()->id)->delete();
+
+        return $this->success("You left {$class->classname}.");
+    }
+
+    public function destroy(Classess $class): JsonResponse
+    {
+        Gate::authorize('manage', $class);
+
+        // Rows cascade in the database, but uploaded files have to be removed by hand.
+        $class->materials()->whereNotNull('file')->get()->each->deleteFile();
+        $class->delete();
+
+        return $this->success('Class deleted.');
+    }
+
+    private function grid(Request $request, string $status): JsonResponse
+    {
+        $classess = Classess::forMember($request->user())
+                            ->where('status', $status)
+                            ->with('owner')
+                            ->latest()
+                            ->get();
 
         return response()->json([
-        'html' => view('layouts.partials.classess', ['classess' => $classess])->render(),
-        'classess' => $classess
+            'html' => view('layouts.partials.classess', ['classess' => $classess, 'archived' => $status === Classess::STATUS_ARCHIVED])->render(),
+            'count' => $classess->count(),
         ]);
-    }
-    public function destroy(string $id):JsonResponse
-    {
-        $teacher_id = auth()->user()->id;
-        $isExist = DB::table('classess')
-        ->where('id', $id)
-        ->where('teacher_id', $teacher_id)
-        ->exists();
-
-        if(!$isExist){
-            return response()->json(['error' => 'You dont have the permission to delete this class!']);
-        }
-        DB::table('classess')->where('id', $id)->delete();
-        return response()->json(['success' => 'Classess deleted Successfully']);
     }
 }

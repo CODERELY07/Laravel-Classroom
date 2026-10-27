@@ -1,19 +1,12 @@
-<div class="modal fade mt-5" id="{{$id}}" tabindex="-1" role="dialog" aria-labelledby="{{$id}}Label" aria-hidden="true">
-  <div class="modal-dialog mt-5" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="{{$id}}Label"> 
-                @isset($heading)
-                  {{ $heading }}
-                @endisset
-              </h5>
-              <button type="button" id="close" class="close close-modal" data-dismiss="modal" aria-label="Close" data-target="#{{$id}}">
-              <span aria-hidden="true">&times;</span>
-              </button>
-          </div>
-          <div class="modal-body">
-            {{ $slot}}
-          </div>
-      </div>
-  </div>
+@props(['id', 'title' => null, 'size' => null])
+<div class="modal fade" id="{{ $id }}" tabindex="-1" aria-labelledby="{{ $id }}Label" aria-hidden="true">
+    <div @class(['modal-dialog modal-dialog-centered modal-dialog-scrollable', 'modal-'.$size => $size])>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="{{ $id }}Label">{{ $title ?? $heading ?? '' }}</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            {{ $slot }}
+        </div>
+    </div>
 </div>

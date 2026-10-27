@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use Route;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +20,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Route::pattern('id', '[0-9]+');
+        // Numeric route keys only, so malformed URLs 404 instead of hitting the database.
+        Route::patterns([
+            'class' => '[0-9]+',
+            'material' => '[0-9]+',
+            'question' => '[0-9]+',
+            'student' => '[0-9]+',
+        ]);
     }
 }

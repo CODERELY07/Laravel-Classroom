@@ -1,98 +1,49 @@
-<header class="container-fluid p-3 shadow-1">
-    <div class="row">
-       <div class="col-12 d-flex justify-content-between align-items-center">
-        <div class="d-flex gap-3 align-items-center">
-            <div class="cursor-pointer" id="bar">
-                <i class="fa-solid fa-bars"></i>
-            </div>
-            {{-- Navigation --}}
-            <nav class="nav pt-2 shadow-1 d-flex flex-column flex-nowrap">
-                <ul class="list-unstyled">
-                    <a href="{{route('user.index')}}">
-                        <li class="d-flex align-items-center">
-                            <i class="fa-solid fa-house"></i>
-                            <span>Home</span>
-                        </li>
-                    </a>
-                </ul>
-                <x-enrolled-classess/>
-                <ul class="list-unstyled">
-                    <ul class="list-unstyled">
-                        <a href="{{route('user.archive')}}">
-                            <li class="d-flex align-items-center">
-                                <i class="fa-solid fa-box-archive"></i>
-                                <span>Archive</span>
-                            </li>
-                        </a>   
-                        <a href="{{route('user.setting')}}">
-                            <li class="d-flex align-items-center">
-                                <i class="fa-solid fa-gear"></i>                            
-                                <span>Settings</span>
-                            </li>
-                        </a>
-                    </ul>
-                </ul>
-            </nav>
-             {{-- Navigation --}}
-             {{-- Title --}}
-            <span class="pl-3">
-                @if(trim($__env->yieldContent('title')) == "Classroom")
-                @yield('title')
-            @else
-                <a href="{{ route('user.index') }}">
-                    Classroom  <i class="fa-solid fa-greater-than mx-2"></i>
-                    @yield('title')
+<header class="topbar">
+    <button type="button" class="icon-btn sidebar-toggle" data-sidebar-toggle aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    </button>
+
+    <a href="{{ route('user.index') }}" class="brand">
+        <span class="brand-mark" aria-hidden="true">ME</span>
+        <span class="brand-name">Classroom</span>
+    </a>
+
+    @hasSection('crumb')
+        <nav class="crumbs min-w-0" aria-label="Breadcrumb">
+            <span aria-hidden="true">/</span>
+            <span class="crumb-current">@yield('crumb')</span>
+        </nav>
+    @endif
+
+    <div class="topbar-actions">
+        @stack('topbar-actions')
+
+        <div class="dropdown">
+            <button type="button" class="icon-btn avatar-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu">
+                <x-avatar :user="$authUser" size="sm" />
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+                <div class="account-head">
+                    <x-avatar :user="$authUser" size="lg" />
+                    <div class="min-w-0">
+                        <strong class="text-truncate">{{ $authUser->name }}</strong>
+                        <small class="d-block text-truncate">{{ $authUser->email }}</small>
+                        <span class="pill pill-accent mt-1 text-capitalize">{{ $authUser->role }}</span>
+                    </div>
+                </div>
+                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileModal">
+                    <i class="fa-regular fa-image" aria-hidden="true"></i> Change photo
+                </button>
+                <a class="dropdown-item" href="{{ route('user.setting') }}">
+                    <i class="fa-solid fa-gear" aria-hidden="true"></i> Settings
                 </a>
-            @endif
-            
-            </span>
-             {{-- Title --}}
-        </div>
-        <div class="d-flex align-items-center gap-3">
-            {{-- join and create class --}}
-            @if(View::getSections()['title'] === 'Classroom')
-            <div class="relative">
-                <div class="d-flex gap-2">
-                    <div class="relative">
-                        <div class="cursor-pointer add-btn" id="add-class-btn" >
-                            <i class="fa-solid fa-plus"></i>
-                        </div>
-                        <div class="toggle-content shadow-1 z-index-99">
-                            <ul class="list-unstyled">
-                                @if (auth()->user()->role == 'teacher')
-                                    <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#createClassModal">Create class</li>
-                                    <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#joinClassModal">Join class</li>
-                                @else
-                                    <li type="button" class="cursor-pointer show-modal" data-toggle="modal" data-target="#joinClassModal">Join class</li>
-                                @endif
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="dropdown-item">
+                        <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i> Sign out
+                    </button>
+                </form>
             </div>
-            @endif
-            {{-- Profile --}}
-            <div class="relative profile-parent">
-                <x-profile-initial  id="profile-class-btn" class="profile-text cursor-pointer relative"/>
-                <div class="toggle-content profile-content align-items-center shadow-1 py-3 px-5">
-                    <div class="d-flex align-items-center flex-column">
-                        <p class="text-center text-dark mb-4">{{$authUser->email}}</p>
-                        <x-profile-initial id="profile-class-btn" class="profile-text shadow-3 text-big-initial relative cursor-pointer">
-                            <div class="pen shadow-3 cursor-pointer show-modal" data-toggle="modal" data-target="#profileModal">
-                                <i class="fa-solid fa-pen"></i>
-                            </div>
-                        </x-profile-initial>
-                        <h5 class="mt-3">Hi, {{$authUser->name}}!</h5>
-                        <div class="d-flex mt-3 gap-3">
-                            <a href="{{route('logout')}}">
-                                <button class="btn pb-2 border text-center form-control">Logout</button>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-             {{-- Profile --}}
         </div>
-       </div>
     </div>
 </header>

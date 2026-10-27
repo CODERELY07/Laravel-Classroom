@@ -1,29 +1,27 @@
-@if (collect($classess)->isEmpty())
-<div class="mt-3 p-2">
-    <h1 class="text-center">Welcome to Classroom!</h1>
-    <p class="text-center">This platform is designed to help you manage and share your classroom materials.</p> 
-</div>
-@else
-@foreach ($classess as $class)
-    @if($class->status == 'ok')
-    <x-class-card classID="{{$class->class_id}}" classname="{{$class->classname}}" section="{{$class->section}}" userID="{{$class->user_id}}" teacherName="{{$class->name}}" teacherProfile="{{$class->profile}}" firstLetter="{{$class->first_letter}}" >
-        @if (auth()->user()->role === 'teacher')
-            <li type="button" class="cursor-pointer show-modal text-dark edit-class" data-toggle="modal" data-target="#editClassModal"  data-id="{{$class->class_id}}"  data-classname={{$class->classname}} data-section={{$class->section}} data-subject={{$class->subject}}>Edit class</li>
-            <li type="button" class="cursor-pointer show-modal text-dark archive-class" data-toggle="modal" data-target="#archiveClassModal" data-id="{{$class->class_id}}">Archive class</li>
-        @else
-            <li type="button" class="cursor-pointer show-modal text-dark unenroll-class" data-id="{{$class->class_id}}" data-toggle="modal" data-target="#unenrollClassModal">Unenroll class</li>
-        @endif
-    </x-class-card>
-    @elseif ($class->status == 'archive')
-    <x-class-card  classID="{{$class->class_id}}" classname="{{$class->classname}}" section="{{$class->section}}" userID="{{$class->user_id}}" teacherName="{{$class->name}}" teacherProfile="{{$class->profile}}" firstLetter="{{$class->first_letter}}" >
-        @if (auth()->user()->role === 'teacher')
-            <li type="button" class="cursor-pointer show-modal text-dark unarchive-class" data-toggle="modal" data-target="#unarchiveClassModal" data-id="{{$class->class_id}}">Unarchive class</li>
-            <li type="button" class="cursor-pointer show-modal text-dark delete-class" data-toggle="modal" data-target="#deleteClassModal"  data-id="{{$class->class_id}}"  data-classname={{$class->classname}} data-section={{$class->section}} data-subject={{$class->subject}}>Delete class</li>
-        @else
-            <li type="button" class="cursor-pointer show-modal text-dark unenroll-class" data-id="{{$class->class_id}}" data-toggle="modal" data-target="#unenrollClassModal">Unenroll class</li>
-        @endif
-    </x-class-card>
+@if ($classess->isEmpty())
+    @if ($archived ?? false)
+        <x-empty-state icon="fa-solid fa-box-archive" title="Nothing in the archive">
+            <p>When a class wraps up, archive it from its card menu to keep your home page tidy. It will wait here.</p>
+        </x-empty-state>
+    @else
+        <x-empty-state icon="fa-solid fa-chalkboard" title="No classes yet">
+            @if (auth()->user()->isTeacher())
+                <p>Create your first class, then share its code with students so they can join.</p>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createClassModal">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Create a class
+                </button>
+            @else
+                <p>Ask your teacher for a class code and enter it to join.</p>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#joinClassModal">
+                    <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Join a class
+                </button>
+            @endif
+        </x-empty-state>
     @endif
-@endforeach
+@else
+    <div class="class-grid">
+        @foreach ($classess as $class)
+            <x-class-card :class="$class" :archived="$archived ?? false" />
+        @endforeach
+    </div>
 @endif
-
