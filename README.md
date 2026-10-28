@@ -3,6 +3,7 @@
 A small, focused classroom app built with Laravel 11. Teachers create classes and share a short code; students join with it. Inside each class you can post materials and questions, collect and grade answers, and talk in a real-time class chat.
 
 > Full technical documentation (architecture, data model, permissions, routes, deployment and the security audit) lives in [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md).
+> To find the files behind each feature, or to add a new one step by step, see [`docs/FEATURES.md`](docs/FEATURES.md).
 
 ## Features
 
@@ -95,7 +96,7 @@ public/
   js/                 main.js entry and feature modules (forms, ui, chat, …)
 resources/js/         Echo bootstrap bundled by Vite
 tests/Feature/        Pest feature tests
-docs/                 Full documentation
+docs/                 DOCUMENTATION.md (reference), FEATURES.md (feature map + how-to)
 ```
 
 ## License

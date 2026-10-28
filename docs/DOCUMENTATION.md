@@ -454,6 +454,8 @@ The `UserFactory` has a `teacher()` state; the default role is `student`.
 
 ## 15. Extending the app
 
+> For a file-by-file map of every feature and a complete worked example (adding class announcements), see [FEATURES.md](FEATURES.md).
+
 **Add a class-scoped feature**
 
 1. Add a route inside the `auth` group using a `{class}` parameter (it's bound to `Classess` and limited to digits).
