@@ -50,7 +50,7 @@
                         @if ($canTeach)
                             <div class="stat"><span>Turned in</span><strong>{{ $submissionCount }} / {{ $studentCount }}</strong></div>
                         @elseif ($answer?->isGraded())
-                            <div class="stat"><span>Your grade</span><strong class="text-success">{{ $answer->grade }} / {{ $question->points }}</strong></div>
+                            <div class="stat"><span>Your grade</span><strong style="color: var(--accent)">{{ $answer->grade }} / {{ $question->points }}</strong></div>
                         @endif
                     </div>
                 </div>

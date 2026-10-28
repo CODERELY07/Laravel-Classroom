@@ -304,7 +304,13 @@ Controllers build success and error replies with `$this->success($message, redir
 
 `public/css/app.css` sits on top of Bootstrap 5.3 and is split into sections: tokens, base, Bootstrap overrides, app shell, components, pages, utilities and responsive rules.
 
-- **Palette.** A warm paper background (`--paper`), white surfaces, ink-coloured text, one deep green accent (`--accent`) and a clay secondary (`--clay`). Six muted banner colours (`--theme-0` … `--theme-5`) all reach at least 4.5:1 contrast with white text. A class always gets the same colour (`id % 6`).
+- **Palette.** An education look:
+  - a white page (`--paper`) with light cool-grey panels (`--surface-2`) and navy text
+  - a school-blue accent (`--accent`, `#1f4f9a`) for buttons, links and active states
+  - a pencil-amber secondary (`--clay`) for questions
+  - six academic banner colours (`--theme-0` … `--theme-5`: navy, burgundy, slate blue, cerulean, bronze, slate), all at least 4.5:1 contrast with white text; a class always gets the same colour (`id % 6`)
+
+  Green is deliberately not used; "success" states use the brand blue.
 - **Type.** Fraunces (serif) for page and class titles, Inter for everything else.
 - **Shell.** A sticky top bar and a sidebar. At 992 px and above the sidebar is always visible; below that it becomes a slide-in drawer with a backdrop. Escape closes it.
 - **Motion.** Short transitions only, all turned off when `prefers-reduced-motion` is set.

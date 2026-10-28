@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="ME Classroom — a calm place to run your classes: share materials, post questions, grade work and chat with students.">
-    <meta name="theme-color" content="#23614a">
+    <meta name="theme-color" content="#1f4f9a">
     <title>@hasSection('title')@yield('title') · @endif{{ config('app.name', 'ME Classroom') }}</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
 
