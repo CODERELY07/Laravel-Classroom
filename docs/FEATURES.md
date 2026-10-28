@@ -119,11 +119,13 @@ Deleting a class also deletes its attachment files (`Material::deleteFile()`).
 
 | Layer | File |
 |---|---|
-| Routes | `POST /joinClass`, `POST /unenrollClass/{class}` |
-| Controller | `ClassController@join`, `ClassController@unenrollClass` |
+| Routes | `POST /joinClass` (throttled), `POST /unenrollClass/{class}`, `POST /resetClassCode/{class}` (owner) |
+| Controller | `ClassController@join`, `@unenrollClass`, `@resetCode` |
 | Model | `ClassMember` (`roleFor()`) |
 | Views | Join dialog in `homeModal.blade.php`; "Leave class" in `class-card.blade.php` |
-| Tests | "joins a class by code once" |
+| Tests | "joins a class by code once", "never grants teacher rights through a class code", "lets the owner reset a leaked class code" |
+
+Rules: a class code always makes you a **student**, and codes are case-insensitive.
 
 ### 7. Class page (stream and tabs)
 
@@ -147,7 +149,7 @@ A post with a description and an optional file.
 
 | Layer | File |
 |---|---|
-| Routes | `POST /material/store`, `GET /material/{material}`, `GET /material/{material}/file` |
+| Routes | `POST /material/store`, `GET /material/{material}`, `GET /material/{material}/file`, `POST /material/{material}/delete` |
 | Controller | `app/Http/Controllers/MaterialController.php` (`ALLOWED_TYPES` lists accepted files) |
 | Permission | `teach` to post, `view` to read and download |
 | Model | `app/Models/Material.php` (`fileDisk()`, `isImage()`, `deleteFile()`) |
@@ -160,7 +162,7 @@ A post with a description and an optional file.
 
 | Layer | File |
 |---|---|
-| Routes | `POST /question` (`question.store`), `GET /question/{question}` (`question.show`), `POST /question/turnin` (`turnIn`) |
+| Routes | `POST /question` (`question.store`), `GET /question/{question}` (`question.show`), `POST /question/{question}/delete` (`question.destroy`), `POST /question/turnin` (`turnIn`) |
 | Controllers | `QuestionController.php` (post, view), `ClassMemberQuestionAnswersController.php` (turn in) |
 | Models | `Question.php` (`items()`, `isPastDue()`), `ClassMemberQuestionAnswers.php` (`isGraded()`) |
 | Migrations | `2025_01_30_062939_create_questions_table.php`, `2025_01_30_065128_create_class_member_question_answers_table.php` |
@@ -168,7 +170,12 @@ A post with a description and an optional file.
 | JS | `classwork.js` → `initQuestionBuilder()` (the "Items" counter that adds prompt inputs) |
 | Tests | "records answers for the signed-in student only" |
 
-Rules: students answer as themselves only; they can edit an answer until it is graded.
+Rules:
+
+- Students answer as themselves only.
+- They can edit an answer until it is graded **or** the due date passes.
+- A first submission after the due date is accepted and marked **Late**.
+- The status badge comes from `<x-work-status>`, which is also used on the Grades tab and the grade page.
 
 ### 10. Grades
 
@@ -185,12 +192,14 @@ Rules: students answer as themselves only; they can edit an answer until it is g
 
 | Layer | File |
 |---|---|
-| Routes | `GET /stream/{class}/search`, `POST /stream/{class}/members`, `POST /stream/{class}/unenroll` |
-| Controller | `StreamController@search`, `@store`, `@unenrollStudents` |
-| Permission | `teach` |
+| Routes | `GET /stream/{class}/search`, `POST /stream/{class}/members`, `POST /stream/{class}/unenroll`, `POST /stream/{class}/teachers/{teacher}/remove` |
+| Controller | `StreamController@search`, `@store`, `@unenrollStudents`, `@removeTeacher` |
+| Permission | `teach`; `manage` (owner) to add or remove co-teachers |
 | Views | People tab in `stream.blade.php`; "Add people" dialog in `classworkModals.blade.php` |
 | JS | `classwork.js` → `initPeoplePicker()`, `initUnenroll()` |
-| Tests | "lets only teachers remove students", "searches people by email…", "adds people without creating duplicate memberships" |
+| Tests | "lets only teachers remove students", "searches people by email…", "adds people without creating duplicate memberships", "lets only the owner add co-teachers and remove them", "only finds people by their exact email" |
+
+Rules: search matches the **exact** email only. Only the owner can make someone a co-teacher.
 
 ### 12. Class chat
 
@@ -208,6 +217,10 @@ Rules: students answer as themselves only; they can edit an answer until it is g
 | Tests | "accepts chat messages from class members only" |
 
 Without Reverb, the chat checks for new messages every 5 seconds.
+
+### Archived classes (applies to features 7–12)
+
+Every action that changes a class calls `$this->ensureActive($class)` (defined in `app/Http/Controllers/Controller.php`). On an archived class it returns 403 "This class is archived…". The class page uses `$canEdit` (from `StreamController@show`) to hide editing buttons. Test: "makes archived classes read-only".
 
 ### 13. Settings and profile photo
 
@@ -244,7 +257,7 @@ Use this for any new feature. Skip a step when it doesn't apply.
 1. **Table** — `php artisan make:migration create_things_table`, then `php artisan migrate`.
 2. **Model** — `php artisan make:model Thing`; add `$fillable` and relationships.
 3. **Relationship on the class** — add `things()` to `app/Models/Classess.php` if it belongs to a class.
-4. **Controller** — `php artisan make:controller ThingController`. In each method: validate, `Gate::authorize(...)`, save, return `$this->success(...)`.
+4. **Controller** — `php artisan make:controller ThingController`. In each method: validate, `Gate::authorize(...)`, call `$this->ensureActive($class)` if it changes class content, save, return `$this->success(...)`.
 5. **Route** — add it to `routes/web.php` inside the `auth` group. Use `{class}` for the class id.
 6. **View** — build forms with `<x-field>` inside `<x-modal>`, and add `data-ajax-form` to the `<form>`.
 7. **JavaScript** — usually none. Only add a module in `public/js/` if the feature needs custom behaviour.
@@ -355,6 +368,7 @@ class AnnouncementController extends Controller
     public function store(Request $request, Classess $class): JsonResponse
     {
         Gate::authorize('teach', $class);              // teachers of this class only
+        $this->ensureActive($class);                   // archived classes are read-only
 
         $data = $request->validate([
             'body' => 'required|string|max:2000',

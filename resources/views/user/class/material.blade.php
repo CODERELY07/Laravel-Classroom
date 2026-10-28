@@ -21,6 +21,19 @@
 
     <article class="panel">
         <div class="panel-body">
+            @can('teach', $material->classroom)
+                @unless ($material->classroom->isArchived())
+                    <div class="d-flex justify-content-end mb-2">
+                        <button type="button" class="btn btn-sm btn-quiet text-danger"
+                                data-confirm-url="{{ route('material.destroy', $material->id) }}"
+                                data-confirm-title="Delete “{{ $material->title }}”?"
+                                data-confirm-body="The material and its attachment will be permanently deleted."
+                                data-confirm-label="Delete material" data-confirm-danger>
+                            <i class="fa-regular fa-trash-can" aria-hidden="true"></i> Delete
+                        </button>
+                    </div>
+                @endunless
+            @endcan
             <header class="article-header">
                 <span class="feed-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
                 <div class="min-w-0">

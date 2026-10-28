@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class StreamController extends Controller
 {
@@ -44,6 +45,8 @@ class StreamController extends Controller
             'teachers' => $class->teachers,
             'students' => $class->students,
             'canTeach' => $canTeach,
+            'canEdit' => $canTeach && ! $class->isArchived(),
+            'isOwner' => Gate::allows('manage', $class),
             'grades' => $grades,
         ]);
     }
@@ -51,6 +54,7 @@ class StreamController extends Controller
     public function unenrollStudents(Request $request, Classess $class): JsonResponse
     {
         Gate::authorize('teach', $class);
+        $this->ensureActive($class);
 
         $data = $request->validate([
             'unenroll' => 'required|array|min:1',
@@ -65,24 +69,44 @@ class StreamController extends Controller
         return $this->success("Removed {$removed} student(s) from the class.", redirectUrl: route('stream', $class->id).'#people');
     }
 
-    /** Find people by email who are not already in the class. */
+    /** The owner removes a co-teacher. */
+    public function removeTeacher(Classess $class, User $teacher): JsonResponse
+    {
+        Gate::authorize('manage', $class);
+        $this->ensureActive($class);
+
+        if ((int) $teacher->id === (int) $class->teacher_id) {
+            return $this->error('The class owner cannot be removed.', 403);
+        }
+
+        $class->members()
+              ->where('user_id', $teacher->id)
+              ->where('role', ClassMember::ROLE_TEACHER)
+              ->delete();
+
+        return $this->success("{$teacher->name} is no longer a teacher in this class.", redirectUrl: route('stream', $class->id).'#people');
+    }
+
+    /**
+     * Look up one person by their exact email address.
+     *
+     * Partial matches are deliberately not supported: they would let any
+     * teacher account browse the names and emails of every user.
+     */
     public function search(Request $request, Classess $class): JsonResponse
     {
         Gate::authorize('teach', $class);
 
-        $term = trim((string) $request->query('data'));
+        $email = Str::lower(trim((string) $request->query('data')));
 
-        if (mb_strlen($term) < 3) {
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return response()->json(['data' => []]);
         }
 
-        $escaped = addcslashes($term, '%_\\');
-
         $users = User::query()
-            ->where('email', 'like', "%{$escaped}%")
+            ->where('email', $email)
             ->whereDoesntHave('memberships', fn ($q) => $q->where('class_id', $class->id))
-            ->orderBy('email')
-            ->limit(10)
+            ->limit(1)
             ->get(['id', 'name', 'email', 'role', 'profile']);
 
         return response()->json([
@@ -100,11 +124,15 @@ class StreamController extends Controller
     public function store(Request $request, Classess $class): JsonResponse
     {
         Gate::authorize('teach', $class);
+        $this->ensureActive($class);
 
         $data = $request->validate([
             'added_users' => 'required|array|min:1|max:50',
             'added_users.*' => 'integer|exists:users,id',
         ], ['added_users.required' => 'Pick at least one person to add.']);
+
+        // Only the owner can grant teacher rights; everyone else is added as a student.
+        $canAddTeachers = Gate::allows('manage', $class);
 
         $existing = $class->members()->pluck('user_id');
         $users = User::whereIn('id', $data['added_users'])->whereNotIn('id', $existing)->get();
@@ -112,7 +140,7 @@ class StreamController extends Controller
         foreach ($users as $user) {
             $class->members()->create([
                 'user_id' => $user->id,
-                'role' => ClassMember::roleFor($user),
+                'role' => $canAddTeachers ? ClassMember::roleFor($user) : ClassMember::ROLE_STUDENT,
                 'joined_at' => now(),
             ]);
         }

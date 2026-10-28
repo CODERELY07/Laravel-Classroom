@@ -26,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
             'material' => '[0-9]+',
             'question' => '[0-9]+',
             'student' => '[0-9]+',
+            'teacher' => '[0-9]+',
         ]);
     }
 }

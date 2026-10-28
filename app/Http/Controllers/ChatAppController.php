@@ -21,6 +21,7 @@ class ChatAppController extends Controller
 
         $class = Classess::findOrFail($data['class_id']);
         Gate::authorize('view', $class);
+        $this->ensureActive($class);
 
         $chat = $class->messages()->create([
             'user_id' => $request->user()->id,

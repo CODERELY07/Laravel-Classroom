@@ -205,10 +205,13 @@ it('searches people by email without exposing passwords or current members', fun
     $other = User::factory()->create(['email' => 'other@school.test']);
     $class = makeClass($teacher, [$member]);
 
-    $response = $this->actingAs($teacher)->getJson("/stream/{$class->id}/search?data=school.test")->assertOk();
+    $response = $this->actingAs($teacher)->getJson("/stream/{$class->id}/search?data=other@school.test")->assertOk();
 
     expect(collect($response->json('data'))->pluck('id')->all())->toBe([$other->id])
         ->and($response->json('data.0'))->not->toHaveKey('password');
+
+    // Existing members are not offered again.
+    $this->actingAs($teacher)->getJson("/stream/{$class->id}/search?data=member@school.test")->assertJsonCount(0, 'data');
 });
 
 it('adds people without creating duplicate memberships', function () {
@@ -307,4 +310,125 @@ it('accepts chat messages from class members only', function () {
     $this->actingAs(User::factory()->create())
          ->postJson('/fire/message', ['class_id' => $class->id, 'message' => 'hi'])
          ->assertForbidden();
+});
+
+// --- Business rules (production review) --------------------------------------
+
+it('never grants teacher rights through a class code', function () {
+    $class = makeClass(User::factory()->teacher()->create(), [$student = User::factory()->create()]);
+    $question = makeQuestion($class);
+    $answer = ClassMemberQuestionAnswers::create(['class_member_id' => $class->membershipFor($student)->id, 'question_id' => $question->id, 'answer' => 'x']);
+
+    // A self-registered "teacher" who learns the code joins as a student…
+    $impostor = User::factory()->teacher()->create();
+    $this->actingAs($impostor)->postJson('/joinClass', ['classcode' => strtoupper($class->class_code)])->assertOk();
+    expect($class->membershipFor($impostor)->role)->toBe(ClassMember::ROLE_STUDENT);
+
+    // …and cannot grade.
+    $this->actingAs($impostor)->postJson('/grade/update', ['answer_id' => $answer->id, 'grade' => 10])->assertForbidden();
+});
+
+it('lets only the owner add co-teachers and remove them', function () {
+    $owner = User::factory()->teacher()->create();
+    $class = makeClass($owner);
+    $coTeacher = User::factory()->teacher()->create();
+    $this->actingAs($owner)->postJson("/stream/{$class->id}/members", ['added_users' => [$coTeacher->id]])->assertOk();
+    expect($class->membershipFor($coTeacher)->role)->toBe(ClassMember::ROLE_TEACHER);
+
+    // A co-teacher adding another teacher account only adds a student.
+    $another = User::factory()->teacher()->create();
+    $this->actingAs($coTeacher)->postJson("/stream/{$class->id}/members", ['added_users' => [$another->id]])->assertOk();
+    expect($class->membershipFor($another)->role)->toBe(ClassMember::ROLE_STUDENT);
+
+    $this->actingAs($coTeacher)->postJson("/stream/{$class->id}/teachers/{$owner->id}/remove")->assertForbidden();
+    $this->actingAs($owner)->postJson("/stream/{$class->id}/teachers/{$owner->id}/remove")->assertForbidden();
+    $this->actingAs($owner)->postJson("/stream/{$class->id}/teachers/{$coTeacher->id}/remove")->assertOk();
+    expect($class->membershipFor($coTeacher))->toBeNull();
+});
+
+it('only finds people by their exact email', function () {
+    $teacher = User::factory()->teacher()->create();
+    $class = makeClass($teacher);
+    $target = User::factory()->create(['email' => 'jamie@school.test']);
+
+    $this->actingAs($teacher)->getJson("/stream/{$class->id}/search?data=school.test")->assertOk()->assertJsonCount(0, 'data');
+    $this->actingAs($teacher)->getJson("/stream/{$class->id}/search?data=Jamie@School.test")
+         ->assertOk()->assertJsonPath('data.0.id', $target->id);
+});
+
+it('makes archived classes read-only', function () {
+    $teacher = User::factory()->teacher()->create();
+    $student = User::factory()->create();
+    $class = makeClass($teacher, [$student]);
+    $question = makeQuestion($class);
+    $answer = ClassMemberQuestionAnswers::create(['class_member_id' => $class->membershipFor($student)->id, 'question_id' => $question->id, 'answer' => 'x']);
+    $class->update(['status' => Classess::STATUS_ARCHIVED]);
+
+    $this->actingAs($teacher)->postJson('/material/store', ['class_id' => $class->id, 'title' => 'M', 'description' => 'D'])->assertForbidden();
+    $this->actingAs($teacher)->postJson('/grade/update', ['answer_id' => $answer->id, 'grade' => 5])->assertForbidden();
+    $this->actingAs($teacher)->postJson("/question/{$question->id}/delete")->assertForbidden();
+    $this->actingAs($student)->postJson('/fire/message', ['class_id' => $class->id, 'message' => 'hi'])->assertForbidden();
+    $this->actingAs($student)->post('/question/turnin', ['question_id' => $question->id, 'answer' => 'changed'])->assertSessionHas('error');
+
+    // Reading still works.
+    $this->actingAs($student)->get("/stream/{$class->id}")->assertOk()->assertSee('archived and read-only');
+    expect($answer->fresh()->answer)->toBe('x');
+});
+
+it('accepts late work, marks it late and locks answers after the due date', function () {
+    $teacher = User::factory()->teacher()->create();
+    [$onTime, $late] = User::factory()->count(2)->create();
+    $class = makeClass($teacher, [$onTime, $late]);
+    $question = makeQuestion($class);
+
+    $this->actingAs($onTime)->post('/question/turnin', ['question_id' => $question->id, 'answer' => 'early']);
+
+    $this->travel(8)->days();
+
+    // Editing an on-time answer after the deadline is refused.
+    $this->actingAs($onTime)->post('/question/turnin', ['question_id' => $question->id, 'answer' => 'rewritten'])->assertSessionHas('error');
+    expect(ClassMemberQuestionAnswers::firstWhere('answer', 'early'))->not->toBeNull();
+
+    // A first submission after the deadline is accepted and flagged.
+    $this->actingAs($late)->post('/question/turnin', ['question_id' => $question->id, 'answer' => 'sorry'])->assertSessionHas('success');
+    $answer = ClassMemberQuestionAnswers::firstWhere('answer', 'sorry');
+    expect($answer->isLate())->toBeTrue()
+        ->and(ClassMemberQuestionAnswers::firstWhere('answer', 'early')->isLate())->toBeFalse();
+
+    $this->actingAs($teacher)->get("/grade/{$class->id}/user/{$late->id}")->assertOk()->assertSee('Late');
+});
+
+it('lets teachers delete questions and materials, including the file', function () {
+    Storage::fake('local');
+    $teacher = User::factory()->teacher()->create();
+    $student = User::factory()->create();
+    $class = makeClass($teacher, [$student]);
+    $question = makeQuestion($class);
+
+    $this->actingAs($teacher)->post('/material/store', [
+        'class_id' => $class->id, 'title' => 'Slides', 'description' => 'Week 1',
+        'file' => \Illuminate\Http\UploadedFile::fake()->create('slides.pdf', 10, 'application/pdf'),
+    ], ['Accept' => 'application/json'])->assertOk();
+    $material = $class->materials()->sole();
+    Storage::disk('local')->assertExists($material->file);
+
+    $this->actingAs($student)->postJson("/material/{$material->id}/delete")->assertForbidden();
+    $this->actingAs($student)->postJson("/question/{$question->id}/delete")->assertForbidden();
+
+    $this->actingAs($teacher)->postJson("/material/{$material->id}/delete")->assertOk();
+    $this->actingAs($teacher)->postJson("/question/{$question->id}/delete")->assertOk();
+
+    Storage::disk('local')->assertMissing($material->file);
+    expect($class->materials()->count())->toBe(0)->and($class->questions()->count())->toBe(0);
+});
+
+it('lets the owner reset a leaked class code', function () {
+    $owner = User::factory()->teacher()->create();
+    $class = makeClass($owner);
+    $oldCode = $class->class_code;
+
+    $this->actingAs($owner)->postJson("/resetClassCode/{$class->id}")->assertOk();
+    expect($class->fresh()->class_code)->not->toBe($oldCode);
+
+    $this->actingAs(User::factory()->create())->postJson('/joinClass', ['classcode' => $oldCode])->assertNotFound();
 });

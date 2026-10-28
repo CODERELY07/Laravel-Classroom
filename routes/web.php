@@ -16,8 +16,8 @@ Route::get('/', function () {
     return auth()->check() ? redirect()->route('user.index') : view('home.index');
 })->name('home');
 
-// Logged in users
-Route::middleware('auth')->group(function () {
+// Logged in users. auth.session ends other sessions when a password changes.
+Route::middleware(['auth', 'auth.session'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Account
@@ -35,11 +35,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/classess', 'show')->name('classess.show');
         Route::get('/archive', 'showArchiveClass')->name('archive.show');
         Route::post('/createClass', 'create')->name('createClass.post');
-        Route::post('/joinClass', 'join')->name('join.post');
+        Route::post('/joinClass', 'join')->middleware('throttle:10,1')->name('join.post');
         Route::post('/updateClass/{class}', 'update')->name('updateClass.post');
         Route::post('/archiveClass/{class}', 'archive')->name('archiveClass.post');
         Route::post('/unarchiveClass/{class}', 'unarchive')->name('unarchiveClass.post');
         Route::post('/destroyClass/{class}', 'destroy')->name('destroyClass.post');
+        Route::post('/resetClassCode/{class}', 'resetCode')->name('resetCode.post');
         Route::post('/unenrollClass/{class}', 'unenrollClass')->name('unenrollClass.post');
     });
 
@@ -47,7 +48,8 @@ Route::middleware('auth')->group(function () {
     Route::controller(StreamController::class)->group(function () {
         Route::get('/stream/{class}', 'show')->name('stream');
         Route::post('/stream/{class}/unenroll', 'unenrollStudents')->name('unenroll');
-        Route::get('/stream/{class}/search', 'search')->name('stream.search');
+        Route::get('/stream/{class}/search', 'search')->middleware('throttle:30,1')->name('stream.search');
+        Route::post('/stream/{class}/teachers/{teacher}/remove', 'removeTeacher')->name('stream.removeTeacher');
         Route::post('/stream/{class}/members', 'store')->name('stream.store');
     });
 
@@ -55,9 +57,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/material/store', [MaterialController::class, 'store'])->name('material.store');
     Route::get('/material/{material}', [MaterialController::class, 'show'])->name('material.show');
     Route::get('/material/{material}/file', [MaterialController::class, 'download'])->name('material.file');
+    Route::post('/material/{material}/delete', [MaterialController::class, 'destroy'])->name('material.destroy');
 
     // Questions and answers
     Route::resource('question', QuestionController::class)->only(['store', 'show']);
+    Route::post('/question/{question}/delete', [QuestionController::class, 'destroy'])->name('question.destroy');
     Route::post('/question/turnin', ClassMemberQuestionAnswersController::class)->name('turnIn');
 
     // Grades

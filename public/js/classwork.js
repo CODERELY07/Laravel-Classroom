@@ -64,7 +64,7 @@ export function initPeoplePicker() {
     const renderResults = (users) => {
         const fresh = users.filter((u) => !selected.has(u.id));
         if (!fresh.length) {
-            results.replaceChildren(el('li', { class: 'text-muted-2 justify-content-center' }, 'No one new matches that email.'));
+            results.replaceChildren(el('li', { class: 'text-muted-2 justify-content-center' }, 'No account with that email, or they are already in the class.'));
             return;
         }
         results.replaceChildren(
@@ -79,8 +79,11 @@ export function initPeoplePicker() {
         results._users = fresh;
     };
 
+    // The server only matches a complete email address, so wait until it looks like one.
+    const looksLikeEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
     const lookup = debounce((query) => {
-        if (query.length < 3) {
+        if (!looksLikeEmail(query)) {
             results.replaceChildren();
             return;
         }

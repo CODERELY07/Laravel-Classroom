@@ -42,6 +42,7 @@ class GradeController extends Controller
 
         $answer = ClassMemberQuestionAnswers::with('question.classroom')->findOrFail($request->answer_id);
         Gate::authorize('teach', $answer->question->classroom);
+        $this->ensureActive($answer->question->classroom);
 
         $max = $answer->question->points;
         if ($request->filled('grade') && (int) $request->grade > $max) {

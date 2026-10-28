@@ -24,6 +24,10 @@ class ClassMemberQuestionAnswersController extends Controller
 
         abort_unless($membership && ! $membership->isTeacher(), 403, 'Only students of this class can turn in work.');
 
+        if ($question->classroom->isArchived()) {
+            return back()->with('error', 'This class is archived, so work can no longer be turned in.');
+        }
+
         $existing = ClassMemberQuestionAnswers::where('class_member_id', $membership->id)
                                               ->where('question_id', $question->id)
                                               ->first();
@@ -32,12 +36,21 @@ class ClassMemberQuestionAnswersController extends Controller
             return back()->with('error', 'This work has already been graded, so it can no longer be changed.');
         }
 
+        // Late work is accepted (and marked late), but on-time work can't be rewritten after the deadline.
+        if ($existing && $question->isPastDue()) {
+            return back()->with('error', 'The due date has passed, so your answer can no longer be changed.');
+        }
+
         ClassMemberQuestionAnswers::updateOrCreate(
             ['class_member_id' => $membership->id, 'question_id' => $question->id],
             ['answer' => $data['answer']]
         );
 
         return redirect()->route('question.show', $question->id)
-                         ->with('success', $existing ? 'Your answer was updated.' : 'Turned in. Nice work!');
+                         ->with('success', match (true) {
+                             (bool) $existing => 'Your answer was updated.',
+                             $question->isPastDue() => 'Turned in late. Your teacher will see it was submitted after the due date.',
+                             default => 'Turned in. Nice work!',
+                         });
     }
 }

@@ -27,6 +27,7 @@ class QuestionController extends Controller
 
         $class = Classess::findOrFail($data['class_id']);
         Gate::authorize('teach', $class);
+        $this->ensureActive($class);
 
         $class->questions()->create([
             'title' => $data['title'],
@@ -38,6 +39,18 @@ class QuestionController extends Controller
         ]);
 
         return $this->success('Question posted.', redirectUrl: route('stream', $class->id).'#classwork');
+    }
+
+    /** Deleting a question also deletes every answer and grade for it. */
+    public function destroy(Question $question): JsonResponse
+    {
+        $class = $question->classroom;
+        Gate::authorize('teach', $class);
+        $this->ensureActive($class);
+
+        $question->delete();
+
+        return $this->success('Question deleted.', redirectUrl: route('stream', $class->id).'#classwork');
     }
 
     public function show(Request $request, Question $question)

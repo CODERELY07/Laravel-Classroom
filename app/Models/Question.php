@@ -46,6 +46,6 @@ class Question extends Model
 
     public function isPastDue(): bool
     {
-        return $this->due_date && $this->due_date->endOfDay()->isPast();
+        return $this->due_date && $this->due_date->copy()->endOfDay()->isPast();
     }
 }

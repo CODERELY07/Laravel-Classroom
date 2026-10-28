@@ -31,14 +31,28 @@
                 <span class="pill">Archived</span>
             @endif
         </div>
-        @if ($canTeach)
+        @if ($canEdit)
             <div class="code-chip">
                 <span>Class code</span>
                 <code>{{ $class->class_code }}</code>
                 <button type="button" data-copy="{{ $class->class_code }}">Copy</button>
+                @if ($isOwner)
+                    <button type="button"
+                            data-confirm-url="{{ route('resetCode.post', $class->id) }}"
+                            data-confirm-title="Reset the class code?"
+                            data-confirm-body="The current code stops working right away. People already in the class stay in it."
+                            data-confirm-label="Reset code">Reset</button>
+                @endif
             </div>
         @endif
     </section>
+
+    @if ($class->isArchived())
+        <p class="alert alert-secondary mt-3 mb-0" role="status">
+            <i class="fa-solid fa-box-archive me-1" aria-hidden="true"></i>
+            This class is archived and read-only.{{ $isOwner ? ' Restore it from the Archived page to make changes.' : '' }}
+        </p>
+    @endif
 
     {{-- Tabs --}}
     <nav class="nav class-tabs" role="tablist" aria-label="Class sections">
@@ -71,7 +85,7 @@
 
         {{-- Classwork --}}
         <section id="classwork" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-classwork" tabindex="0">
-            @if ($canTeach)
+            @if ($canEdit)
                 <div class="d-flex flex-wrap gap-2 mb-4">
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createQuestionModal">
                         <i class="fa-solid fa-clipboard-question" aria-hidden="true"></i> New question
@@ -120,7 +134,20 @@
                         </div>
                         <ul class="people-list px-3">
                             @foreach ($teachers as $teacher)
-                                <li><x-avatar :user="$teacher" size="sm" /><span class="person-name">{{ $teacher->name }}</span></li>
+                                <li>
+                                    <x-avatar :user="$teacher" size="sm" /><span class="person-name">{{ $teacher->name }}</span>
+                                    @if ((int) $teacher->id === (int) $class->teacher_id)
+                                        <span class="pill">Owner</span>
+                                    @elseif ($isOwner && $canEdit)
+                                        <button type="button" class="icon-btn" aria-label="Remove {{ $teacher->name }} as teacher" title="Remove teacher"
+                                                data-confirm-url="{{ route('stream.removeTeacher', ['class' => $class->id, 'teacher' => $teacher->id]) }}"
+                                                data-confirm-title="Remove {{ $teacher->name }}?"
+                                                data-confirm-body="They will lose access to this class, including grades and chat."
+                                                data-confirm-label="Remove" data-confirm-danger>
+                                            <i class="fa-solid fa-user-minus" aria-hidden="true"></i>
+                                        </button>
+                                    @endif
+                                </li>
                             @endforeach
                         </ul>
                     </div>
@@ -129,7 +156,7 @@
                     <form class="panel" action="{{ route('unenroll', $class->id) }}" data-ajax-form data-unenroll-form novalidate>
                         <div class="panel-header">
                             <h2 class="panel-title">Students <span class="count text-muted-2 fw-normal">{{ $students->count() }}</span></h2>
-                            @if ($canTeach)
+                            @if ($canEdit)
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-sm btn-quiet text-danger d-none" data-unenroll-submit>
                                         <i class="fa-solid fa-user-minus" aria-hidden="true"></i> Remove <span data-unenroll-count></span>
@@ -149,7 +176,7 @@
                             <ul class="people-list px-3">
                                 @foreach ($students as $student)
                                     <li>
-                                        @if ($canTeach)
+                                        @if ($canEdit)
                                             <input type="checkbox" class="form-check-input mt-0" name="unenroll[]" value="{{ $student->id }}" id="student-{{ $student->id }}" data-unenroll-checkbox>
                                             <label class="d-flex align-items-center gap-2 flex-fill min-w-0" for="student-{{ $student->id }}">
                                                 <x-avatar :user="$student" size="sm" /><span class="person-name">{{ $student->name }}</span>
@@ -206,15 +233,7 @@
                                     @php $answer = $question->answers->first(); @endphp
                                     <tr>
                                         <td class="ps-3"><a href="{{ route('question.show', $question->id) }}">{{ $question->title }}</a></td>
-                                        <td>
-                                            @if (! $answer)
-                                                <span @class(['pill', 'pill-danger' => $question->isPastDue()])>{{ $question->isPastDue() ? 'Missing' : 'Not turned in' }}</span>
-                                            @elseif ($answer->isGraded())
-                                                <span class="pill pill-accent">Graded</span>
-                                            @else
-                                                <span class="pill pill-clay">Turned in</span>
-                                            @endif
-                                        </td>
+                                        <td><x-work-status :question="$question" :answer="$answer" /></td>
                                         <td class="text-end pe-3 fw-medium">
                                             {{ $answer?->isGraded() ? $answer->grade : '—' }} <span class="text-muted-2">/ {{ $question->points }}</span>
                                         </td>
@@ -243,8 +262,10 @@
                 </div>
                 <form class="chat-composer" data-chat-form>
                     <label for="chatMessage" class="visually-hidden">Message</label>
-                    <textarea id="chatMessage" class="form-control" rows="1" maxlength="2000" placeholder="Write a message — Enter to send, Shift+Enter for a new line" required></textarea>
-                    <button type="submit" class="btn btn-primary" aria-label="Send message">
+                    <textarea id="chatMessage" class="form-control" rows="1" maxlength="2000" required
+                              placeholder="{{ $class->isArchived() ? 'This class is archived. Chat is read-only.' : 'Write a message — Enter to send, Shift+Enter for a new line' }}"
+                              @disabled($class->isArchived())></textarea>
+                    <button type="submit" class="btn btn-primary" aria-label="Send message" @disabled($class->isArchived())>
                         <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                     </button>
                 </form>
@@ -253,7 +274,7 @@
     </div>
 </div>
 
-@if ($canTeach)
+@if ($canEdit)
     @include('user.partials.classworkModals', ['class' => $class])
 @endif
 @endsection

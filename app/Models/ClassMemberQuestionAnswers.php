@@ -27,4 +27,12 @@ class ClassMemberQuestionAnswers extends Model
     {
         return $this->grade !== null;
     }
+
+    /** First turned in after the end of the due date. */
+    public function isLate(?Question $question = null): bool
+    {
+        $question ??= $this->question;
+
+        return (bool) ($question?->due_date && $this->created_at?->gt($question->due_date->copy()->endOfDay()));
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Classess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -48,6 +49,9 @@ class UserController extends Controller
         ], ['newPass' => 'new password']);
 
         $request->user()->update(['password' => $request->newPass]);
+
+        // Rotates the stored hash so every other session is signed out (auth.session middleware).
+        Auth::logoutOtherDevices($request->newPass);
 
         return $this->success('Password changed.', redirectUrl: route('user.setting'));
     }

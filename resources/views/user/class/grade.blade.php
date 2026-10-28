@@ -36,9 +36,7 @@
                     </h2>
                     <div class="small text-muted-2">Due {{ $question->due_date?->format('M j, Y') }} · {{ $question->points }} points</div>
                 </div>
-                @if (! $answer)
-                    <span @class(['pill', 'pill-danger' => $question->isPastDue()])>{{ $question->isPastDue() ? 'Missing' : 'Not turned in' }}</span>
-                @endif
+                <x-work-status :question="$question" :answer="$answer" />
             </div>
             <div class="panel-body">
                 @if ($items = $question->items())
@@ -55,12 +53,16 @@
                             <input type="number" id="grade-{{ $answer->id }}" class="form-control grade-input"
                                    min="0" max="{{ $question->points }}" step="1" inputmode="numeric"
                                    value="{{ $answer->grade }}" placeholder="—"
-                                   data-grade-input data-answer-id="{{ $answer->id }}" data-url="{{ route('grade.update') }}">
+                                   data-grade-input data-answer-id="{{ $answer->id }}" data-url="{{ route('grade.update') }}"
+                                   @disabled($class->isArchived())>
                             <span class="input-group-text">/ {{ $question->points }}</span>
                         </div>
                         <span class="save-state" data-save-state aria-live="polite"></span>
                     </div>
-                    <p class="form-text mb-0">Turned in {{ $answer->updated_at->diffForHumans() }}. Grades save automatically.</p>
+                    <p class="form-text mb-0">
+                        Turned in {{ $answer->created_at->format('M j, Y g:i A') }}{{ $answer->isLate($question) ? ' (late)' : '' }}.
+                        {{ $class->isArchived() ? 'This class is archived, so grades are read-only.' : 'Grades save automatically.' }}
+                    </p>
                 @else
                     <p class="text-muted-2 mb-0">{{ $student->name }} hasn’t turned this in yet.</p>
                 @endif

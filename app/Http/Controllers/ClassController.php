@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class ClassController extends Controller
 {
@@ -50,7 +51,8 @@ class ClassController extends Controller
         $request->validate(['classcode' => 'required|string|max:20'], [], self::ATTRIBUTES);
 
         $user = $request->user();
-        $class = Classess::where('class_code', trim($request->classcode))->first();
+        // Codes are generated lowercase; accept whatever case the student types.
+        $class = Classess::where('class_code', Str::lower(trim($request->classcode)))->first();
 
         if (! $class || $class->isArchived()) {
             return $this->error('No active class uses that code. Double-check it with your teacher.', 404);
@@ -60,9 +62,11 @@ class ClassController extends Controller
             return $this->error('You are already a member of this class.');
         }
 
+        // A class code is shared with students, so it only ever grants student access.
+        // Co-teachers are added by the owner from the People tab.
         $class->members()->create([
             'user_id' => $user->id,
-            'role' => ClassMember::roleFor($user),
+            'role' => ClassMember::ROLE_STUDENT,
             'joined_at' => now(),
         ]);
 
@@ -105,6 +109,17 @@ class ClassController extends Controller
         $class->update(['status' => Classess::STATUS_ACTIVE]);
 
         return $this->success("{$class->classname} restored.");
+    }
+
+    /** Issue a new class code, e.g. after the old one was shared too widely. */
+    public function resetCode(Classess $class): JsonResponse
+    {
+        Gate::authorize('manage', $class);
+        $this->ensureActive($class);
+
+        $class->update(['class_code' => Classess::generateCode()]);
+
+        return $this->success("New class code: {$class->class_code}. The old code no longer works.", redirectUrl: route('stream', $class->id));
     }
 
     public function unenrollClass(Request $request, Classess $class): JsonResponse

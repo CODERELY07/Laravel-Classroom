@@ -21,6 +21,7 @@ This document covers how ME Classroom works and how to run, extend and deploy it
 15. [Extending the app](#15-extending-the-app)
 16. [Troubleshooting](#16-troubleshooting)
 17. [Refactor audit (October 2026)](#17-refactor-audit-october-2026)
+18. [Production readiness review](#18-production-readiness-review)
 
 ---
 
@@ -182,13 +183,43 @@ Authorization goes through `ClassessPolicy`:
 | `teach` | The owner, or a member with role `Teacher` | Posting materials/questions, grading, people search, adding/removing students |
 | `manage` | The owner only (`teacher_id`) | Editing, archiving, restoring and deleting the class |
 
-Additional rules in controllers:
+### Business rules
+
+**Membership**
+
+- A class code only ever grants **student** access, even to an account with the teacher role. Students know the code, so it can't be allowed to grant grading rights.
+- Only the **owner** can make someone a co-teacher, by adding a teacher account from the People tab. A co-teacher who adds people adds them as students.
+- The owner can remove co-teachers. Nobody can remove the owner.
+- People are found by their **exact** email address. Partial search is disabled so that a teacher account can't browse the list of users.
+- The owner can **reset the class code** if it leaks. The old code stops working immediately.
+- Codes are case-insensitive when joining.
+- The owner can't "leave" their own class; they archive or delete it instead.
+
+**Classwork and submissions**
 
 - A student can only submit answers as **themselves**. The membership is found from the session, never from the request.
-- Answers can be edited until they are graded.
+- Before the due date, a student can edit an answer until it is graded.
+- After the due date:
+  - a student who hasn't turned in can still do so, and the work is marked **Late**;
+  - a student who already turned in can no longer change the answer.
+- Lateness is judged against the end of the due date, in the app's timezone (`APP_TIMEZONE`).
 - Grades must be whole numbers between 0 and the question's points.
-- The owner can't "leave" their own class; they archive or delete it instead.
-- Archived classes can't be joined by code.
+- Teachers can delete questions and materials. Deleting a question also deletes its answers and grades; deleting a material deletes its file.
+
+**Archived classes are read-only.** Everyone can still read them, but nobody can:
+
+- post work
+- turn in answers
+- grade
+- send chat messages
+- add or remove people
+- reset the code
+
+Archived classes can't be joined by code. The owner can restore the class to make changes again.
+
+**Accounts**
+
+- Changing your password signs out your other devices (`auth.session` middleware). Resetting a password does the same.
 
 If a non-member opens a class page, they are sent back to their home page. JSON requests get `403 {"error": "..."}`.
 
@@ -224,21 +255,25 @@ All routes are in `routes/web.php`. Route parameters `class`, `material`, `quest
 | GET | `/classess` | `classess.show` | JSON: active class grid HTML |
 | GET | `/archive` | `archive.show` | JSON: archived class grid HTML |
 | POST | `/createClass` | `createClass.post` | `create` |
-| POST | `/joinClass` | `join.post` | — |
+| POST | `/joinClass` | `join.post` | — ; throttled 10/min |
 | POST | `/updateClass/{class}` | `updateClass.post` | `manage` |
 | POST | `/archiveClass/{class}` | `archiveClass.post` | `manage` |
 | POST | `/unarchiveClass/{class}` | `unarchiveClass.post` | `manage` |
 | POST | `/destroyClass/{class}` | `destroyClass.post` | `manage` |
 | POST | `/unenrollClass/{class}` | `unenrollClass.post` | `view` (not owner) |
+| POST | `/resetClassCode/{class}` | `resetCode.post` | `manage`, active class |
 | GET | `/stream/{class}` | `stream` | `view` |
 | POST | `/stream/{class}/unenroll` | `unenroll` | `teach` |
-| GET | `/stream/{class}/search?data=` | `stream.search` | `teach` |
+| GET | `/stream/{class}/search?data=` | `stream.search` | `teach`; exact email only; throttled 30/min |
+| POST | `/stream/{class}/teachers/{teacher}/remove` | `stream.removeTeacher` | `manage`, active class |
 | POST | `/stream/{class}/members` | `stream.store` | `teach` |
 | POST | `/material/store` | `material.store` | `teach` |
 | GET | `/material/{material}` | `material.show` | `view` |
 | GET | `/material/{material}/file` | `material.file` | `view`; `?download=1` forces download |
+| POST | `/material/{material}/delete` | `material.destroy` | `teach`, active class |
 | POST | `/question` | `question.store` | `teach` |
 | GET | `/question/{question}` | `question.show` | `view` |
+| POST | `/question/{question}/delete` | `question.destroy` | `teach`, active class |
 | POST | `/question/turnin` | `turnIn` | student member |
 | GET | `/grade/{class}/user/{student}` | `grade.show` | `teach` |
 | POST | `/grade/update` | `grade.update` | `teach` |
@@ -548,3 +583,53 @@ What the review found and how each item was resolved.
 - Profile initials no longer query the database on every render.
 - Minified jQuery; a single Bootstrap bundle; fonts loaded with `preconnect` and `display=swap`; lazy-loaded avatars; cache-busted static assets.
 - Chat polling pauses while the browser tab is hidden.
+
+## 18. Production readiness review
+
+A senior backend and business-logic review done before handing the app to a client. Everything under "Fixed" is covered by tests in `tests/Feature/ClassroomTest.php` (32 tests in total).
+
+### Fixed
+
+| Severity | Problem | Fix |
+|---|---|---|
+| Critical | Anyone could sign up as a "teacher", join a class with the code students share, and get full teacher rights, **including changing grades** and removing students | Class codes grant student access only; only the owner can add co-teachers |
+| High | A co-teacher could promote other teacher accounts to co-teacher | Only the owner grants teacher rights |
+| High | Any teacher account could list users' names and emails by searching fragments like `gmail.com` | Exact-email lookup only, rate-limited |
+| High | Archived ("finished") classes were still fully writable: new posts, late answers, grade changes, chat | Archived classes are read-only on the server and in the UI |
+| High | A student could rewrite an answer after the due date, for example after seeing the solutions discussed | Answers lock at the due date; first submissions after it are accepted and marked **Late** |
+| Medium | Late work looked the same as on-time work | "Late" badge for teacher and student |
+| Medium | A wrong question or file could never be removed | Teachers can delete questions and materials, with a confirmation that spells out what is lost |
+| Medium | A leaked class code couldn't be changed | Owner can reset the code |
+| Medium | The owner had no way to remove a co-teacher | Remove button on the People tab |
+| Medium | Joining by code wasn't rate-limited (codes could be guessed) | 10 attempts per minute |
+| Medium | Changing a password left other sessions signed in, for example on a shared school computer | Other devices are signed out |
+| Low | Codes typed in capitals didn't match | Case-insensitive join |
+| Low | Download names were empty for titles without Latin letters | Falls back to `attachment.<ext>` |
+
+### Decisions for the client before launch
+
+These depend on how the client runs their school or business. Each is a product decision, not a bug.
+
+| # | Topic | Current behaviour | Recommendation |
+|---|---|---|---|
+| 1 | **Who can be a teacher** | Anyone picks "Teacher" at sign-up. Since this review, that only lets them run their *own* classes. | If only staff should teach, add an admin approval step or invite-only teacher accounts. |
+| 2 | **Email verification** | Not required. Someone can register with an address they don't own. | Turn on Laravel's `MustVerifyEmail` if email identity matters (it does for grades). |
+| 3 | **Administrator role** | None. Nobody can manage users, recover an abandoned class or remove an abusive account. | Add a small admin area, or manage accounts directly in the database at first. |
+| 4 | **Removing a student deletes their work** | Removing a student, or a student leaving, deletes their answers and grades permanently (database cascade). | If grades are records the business must keep, switch to "soft" removal (mark the membership inactive) before launch. |
+| 5 | **Editing posts** | Questions and materials can be deleted, not edited. | Add editing if teachers need to fix typos after students have answered. |
+| 6 | **Returning work** | Once graded, an answer is final; there's no "return for revision". | Add if teachers want resubmissions. |
+| 7 | **Chat moderation** | Messages can't be deleted or reported. | Let teachers delete messages if classes include minors. |
+| 8 | **Timezone** | `APP_TIMEZONE=UTC`, so due dates end at midnight UTC. | Set `APP_TIMEZONE` to the client's timezone (e.g. `Asia/Manila`) **before** launch. |
+| 9 | **Privacy** | No account deletion or data export. | Often legally required (GDPR, Philippine Data Privacy Act); add before collecting real student data. |
+| 10 | **Backups** | Not part of the app. | Schedule daily database backups and back up `storage/app/private` (attachments) and `public/images`. |
+
+### Production configuration checklist
+
+- `APP_ENV=production`, `APP_DEBUG=false`, and a real `APP_URL` with `https://`
+- `APP_TIMEZONE` set to the client's timezone
+- `SESSION_SECURE_COOKIE=true` (HTTPS only)
+- Real SMTP credentials in `MAIL_*` (password resets depend on it)
+- `REVERB_ALLOWED_ORIGINS` set to the site's hostname if live chat is used
+- `php artisan migrate --force`, then `php artisan config:cache`, `route:cache` and `view:cache`
+- Writable `storage/`, `bootstrap/cache/` and `public/images/`
+- Database and file backups scheduled

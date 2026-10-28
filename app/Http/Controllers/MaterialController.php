@@ -25,6 +25,7 @@ class MaterialController extends Controller
 
         $class = Classess::findOrFail($data['class_id']);
         Gate::authorize('teach', $class);
+        $this->ensureActive($class);
 
         $path = $request->file('file')?->store('materials', Material::DISK);
 
@@ -49,6 +50,18 @@ class MaterialController extends Controller
         ]);
     }
 
+    public function destroy(Material $material): JsonResponse
+    {
+        $class = $material->classroom;
+        Gate::authorize('teach', $class);
+        $this->ensureActive($class);
+
+        $material->deleteFile();
+        $material->delete();
+
+        return $this->success('Material deleted.', redirectUrl: route('stream', $class->id).'#classwork');
+    }
+
     /** Stream the attachment to class members only. */
     public function download(Request $request, Material $material)
     {
@@ -57,7 +70,7 @@ class MaterialController extends Controller
         $disk = $material->fileDisk();
         abort_unless($disk, 404);
 
-        $name = Str::slug($material->title).'.'.$material->fileExtension();
+        $name = (Str::slug($material->title) ?: 'attachment').'.'.$material->fileExtension();
 
         // Images and PDFs open in the browser; anything else downloads.
         $inline = $material->isImage() || $material->fileExtension() === 'pdf';

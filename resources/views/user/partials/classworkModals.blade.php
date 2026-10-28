@@ -55,8 +55,9 @@
     <form action="{{ route('stream.store', $class->id) }}" data-ajax-form data-people-form data-search-url="{{ route('stream.search', $class->id) }}" novalidate>
         <div class="modal-body">
             <div class="form-alert"></div>
-            <label for="peopleSearch" class="form-label">Search by email</label>
-            <input type="search" id="peopleSearch" class="form-control" placeholder="Type at least 3 characters" autocomplete="off" data-people-search>
+            <label for="peopleSearch" class="form-label">Email address</label>
+            <input type="email" id="peopleSearch" class="form-control" placeholder="name@school.edu" autocomplete="off" data-people-search>
+            <div class="form-text">Enter the person’s full email. They need an account first.{{ Gate::allows('manage', $class) ? ' Teacher accounts you add become co-teachers.' : ' Everyone you add joins as a student.' }}</div>
             <div class="invalid-feedback d-block" data-error-for="added_users"></div>
             <ul class="search-results" data-people-results aria-live="polite"></ul>
             <p class="form-label mt-3 mb-2" data-people-selected-label hidden>To be added</p>

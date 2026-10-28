@@ -78,7 +78,7 @@ Set `BROADCAST_CONNECTION=reverb`. Without Reverb the chat still works by pollin
 php vendor/bin/pest
 ```
 
-The suite runs against in-memory SQLite and covers authentication, class permissions, people management, classwork, grading and chat (25 tests).
+The suite runs against in-memory SQLite and covers authentication, class permissions, people management, classwork, grading and chat (32 tests).
 
 ## Project layout
 

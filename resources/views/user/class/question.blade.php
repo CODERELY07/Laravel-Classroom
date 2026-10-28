@@ -59,25 +59,42 @@
                     <a href="{{ route('stream', $class->id) }}#grade" class="btn btn-primary">
                         <i class="fa-solid fa-square-poll-vertical" aria-hidden="true"></i> Grade submissions
                     </a>
+                    @unless ($class->isArchived())
+                        <button type="button" class="btn btn-quiet text-danger"
+                                data-confirm-url="{{ route('question.destroy', $question->id) }}"
+                                data-confirm-title="Delete “{{ $question->title }}”?"
+                                data-confirm-body="Every student answer and grade for this question will be permanently deleted."
+                                data-confirm-label="Delete question" data-confirm-danger>
+                            <i class="fa-regular fa-trash-can" aria-hidden="true"></i> Delete question
+                        </button>
+                    @endunless
                 @else
                     <form class="panel" action="{{ route('turnIn') }}" method="POST">
                         @csrf
                         <input type="hidden" name="question_id" value="{{ $question->id }}">
                         <div class="panel-header">
                             <h2 class="panel-title">Your work</h2>
-                            @if ($answer?->isGraded())
-                                <span class="pill pill-accent">Graded</span>
-                            @elseif ($answer)
-                                <span class="pill pill-clay">Turned in</span>
-                            @elseif ($question->isPastDue())
-                                <span class="pill pill-danger">Missing</span>
+                            @if ($answer || $question->isPastDue())
+                                <x-work-status :question="$question" :answer="$answer" />
                             @else
                                 <span class="pill">Assigned</span>
                             @endif
                         </div>
                         <div class="panel-body">
-                            @if ($answer?->isGraded())
-                                <div class="answer-box">{{ $answer->answer }}</div>
+                            @if ($answer?->isGraded() || ($answer && $question->isPastDue()) || $class->isArchived())
+                                {{-- Locked: graded, past the deadline, or the class is archived. --}}
+                                @if ($answer)
+                                    <div class="answer-box">{{ $answer->answer }}</div>
+                                @endif
+                                <p class="form-text mb-0 mt-2">
+                                    @if ($class->isArchived())
+                                        This class is archived, so work can no longer be turned in.
+                                    @elseif ($answer->isGraded())
+                                        Graded. Your answer can no longer be changed.
+                                    @else
+                                        The due date has passed, so your answer can no longer be changed.
+                                    @endif
+                                </p>
                             @else
                                 <label for="answer" class="visually-hidden">Your answer</label>
                                 <textarea id="answer" name="answer" rows="8" maxlength="20000"
@@ -85,10 +102,12 @@
                                           placeholder="Write your answers here. Number them to match the questions." required>{{ old('answer', $answer?->answer) }}</textarea>
                                 @error('answer')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 <button type="submit" class="btn btn-primary w-100 mt-3">
-                                    {{ $answer ? 'Update answer' : 'Turn in' }}
+                                    {{ $answer ? 'Update answer' : ($question->isPastDue() ? 'Turn in late' : 'Turn in') }}
                                 </button>
                                 @if ($answer)
-                                    <p class="form-text text-center mb-0 mt-2">Turned in {{ $answer->updated_at->diffForHumans() }}. You can edit until it’s graded.</p>
+                                    <p class="form-text text-center mb-0 mt-2">Turned in {{ $answer->updated_at->diffForHumans() }}. You can edit it until it’s graded or the due date passes.</p>
+                                @elseif ($question->isPastDue())
+                                    <p class="form-text text-center mb-0 mt-2">The due date has passed. You can still turn this in, but it will be marked late.</p>
                                 @endif
                             @endif
                         </div>
